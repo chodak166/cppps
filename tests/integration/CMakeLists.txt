@@ -3,11 +3,11 @@ include_directories(
 )
 
 add_subdirectory(${PROJECT_ROOT}/submodules/catch2 catch2)
-add_subdirectory(plugins/plugin_a)
+add_subdirectory(test_plugins)
 
 add_test_executable(TARGET plugin-loader-test
   SOURCES
-  PluginLoader.test.cpp
+  BoostPluginLoader.test.cpp
   main.cpp
 
   LIBS
