@@ -2,3 +2,7 @@
 	path = submodules/catch2
 	url = https://github.com/catchorg/Catch2.git
 	shallow = true
+[submodule "submodules/FakeIt"]
+	path = submodules/fakeit
+	url = https://github.com/eranpeer/FakeIt.git
+	shallow = true
