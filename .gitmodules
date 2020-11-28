@@ -4,5 +4,5 @@
 	shallow = true
 [submodule "submodules/FakeIt"]
 	path = submodules/fakeit
-	url = https://github.com/eranpeer/FakeIt.git
+	url = https://github.com/chodak166/FakeIt.git
 	shallow = true
