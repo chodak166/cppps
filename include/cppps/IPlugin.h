@@ -7,6 +7,9 @@
 
 namespace cppps {
 
+class IApplication;
+using IApplicationPtr = std::shared_ptr<IApplication>;
+
 class IPlugin;
 using IPluginPtr = std::shared_ptr<IPlugin>;
 using IPluginUPtr = std::unique_ptr<IPlugin>;
@@ -19,7 +22,7 @@ public:
   virtual ~IPlugin() = default;
   virtual std::string getName() const = 0;
   virtual std::string getVersionString() const = 0;
-  virtual void load() = 0;
+  virtual void prepare(const IApplicationPtr& app) = 0;
 };
 
 }

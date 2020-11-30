@@ -19,7 +19,7 @@ public:
   // IPlugin interface
   std::string getName() const override {return name;}
   std::string getVersionString() const override {return version;}
-  void load() override {};
+  void prepare(const cppps::IApplicationPtr&) override {};
 
 private:
   std::string name {"unnamed plugin"};
