@@ -20,13 +20,22 @@ namespace {
 
 }
 
+class DuplicatedNodeException: public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
+class NoSuchNodeException: public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
 template <class K, class T>
 class DirectedGraph
 {
 public:
   using KeyProvider = std::function<K (const T& data)>;
   //using RoutedNodes = std::list<std::reference_wrapper<T>>;
-  using RoutedNodes = std::list<T>;
+  using SortedNodes = std::list<T>;
+  using Cycle = std::list<T>;
 
   DirectedGraph(KeyProvider keyProvider)
     : getKey {keyProvider} {}
@@ -37,8 +46,11 @@ public:
 
   void addNode(T data)
   {
-    //TODO throw exception if key exists
     K key = getKey(data);
+    if (keyIndexMap.find(key) != keyIndexMap.end()) {
+      throw DuplicatedNodeException("Directed Graph error: the node with key "
+                                    + key + " already exists");
+    }
     nodes.push_back({data, {}});
     keyIndexMap.insert(std::make_pair(key, nodes.size() - 1));
   }
@@ -50,32 +62,53 @@ public:
 
   void addEdge(const K& startNode, const K& endNode)
   {
-    //TODO throw exception if key doesn't exist
-    auto startIndex = keyIndexMap.at(startNode);
-    auto endIndex = keyIndexMap.at(endNode);
-    nodes[startIndex].nextNodes.insert(endIndex);
+    auto startIt = keyIndexMap.find(startNode);
+    if (startIt == keyIndexMap.end()) {
+      throw NoSuchNodeException("No such node: " + startNode);
+    }
+
+    auto endIt = keyIndexMap.find(endNode);
+    if (endIt == keyIndexMap.end()) {
+      throw NoSuchNodeException("No such node: " + endNode);
+    }
+
+    nodes[startIt->second].nextNodes.insert(endIt->second);
   }
 
   void addEdge(const T& startNode, const T& endNode)
   {
-    //TODO throw exception if key doesn't exist
-    auto startIndex = keyIndexMap.at(getKey(startNode));
-    auto endIndex = keyIndexMap.at(getKey(endNode));
-    nodes[startIndex].nextNodes.insert(endIndex);
+    addEdge(getKey(startNode), getKey(endNode));
   }
 
-  RoutedNodes topologicalSort()
+  SortedNodes topologicalSort()
   {
-    RoutedNodes routedNodes;
+    SortedNodes sortedNodes;
     BoolNodes visited(nodes.size(), false);
 
     for (Index i = 0; i < nodes.size(); ++i) {
       if (!visited.at(i)) {
-        advanceRoutedNodes(i, routedNodes, visited);
+        advanceTopologicalSort(i, sortedNodes, visited);
       }
     }
 
-    return routedNodes;
+    return sortedNodes;
+  }
+
+  Cycle findCycle()
+  {
+    BoolNodes visited(nodes.size(), false);
+    Cycle cycle;
+
+    for (Index i = 0; i < nodes.size(); ++i) {
+      if (!visited.at(i)) {
+        advanceFindCycle(i, cycle, visited);
+      }
+      if (!cycle.empty()) {
+        break;
+      }
+    }
+
+    return cycle;
   }
 
 private:
@@ -91,22 +124,40 @@ private:
 
   KeyProvider getKey;
   std::vector<Node> nodes;
-  std::map<K, Index> keyIndexMap;
+  std::unordered_map<K, Index> keyIndexMap;
 
 private:
 
-  void advanceRoutedNodes(Index index, RoutedNodes& routedNodes, BoolNodes& visited)
+  void advanceTopologicalSort(Index index, SortedNodes& sortedNodes, BoolNodes& visited)
   {
     visited[index] = true;
 
     auto& node = nodes.at(index);
     for (auto& nextNodeIndex: node.nextNodes) {
       if (!visited.at(nextNodeIndex)) {
-        advanceRoutedNodes(nextNodeIndex, routedNodes, visited);
+        advanceTopologicalSort(nextNodeIndex, sortedNodes, visited);
       }
     }
 
-    routedNodes.push_back(node.data);
+    sortedNodes.push_back(node.data);
+  }
+
+  void advanceFindCycle(Index index, Cycle& cycle, BoolNodes& visited)
+  {
+    visited[index] = true;
+
+    auto& node = nodes.at(index);
+    for (auto& nextNodeIndex: node.nextNodes) {
+      if (visited.at(nextNodeIndex)) {
+        for (Index i = nextNodeIndex; i <= index; ++i) {
+          cycle.push_back(nodes.at(i).data);
+        }
+        break;
+      }
+      else {
+        advanceFindCycle(nextNodeIndex, cycle, visited);
+      }
+    }
   }
 
 };
@@ -172,6 +223,8 @@ const User NODE_M {"m", 37};
 const User NODE_N {"n", 38};
 const User NODE_O {"o", 39};
 
+const User NODE_X {"x", 100};
+
 } // namespace
 } // namespace test
 
@@ -179,6 +232,13 @@ TEST_CASE("Testing graph editing", "[graph_ed]")
 {
   auto keyGetter = [](const test::User& user){return user.getLogin();};
   DirectedGraph<std::string, test::User> graph(keyGetter);
+
+
+  SECTION("When no nodes were added to the graph, "
+          "then the size of the graph is 0")
+  {
+    REQUIRE(graph.size() == 0);
+  }
 
   SECTION("When the nodes are added to the graph, "
           "then the size of the graph can be calculated")
@@ -188,6 +248,49 @@ TEST_CASE("Testing graph editing", "[graph_ed]")
     graph.addNode(test::NODE_C);
 
     REQUIRE(graph.size() == 3);
+  }
+
+  SECTION("When the same node is added twice, "
+          "then the second call throws an exception")
+  {
+    graph.addNode(test::NODE_A);
+    REQUIRE_THROWS_AS(graph.addNode(test::NODE_A), DuplicatedNodeException);
+  }
+
+  SECTION("When an edge with non-existent tail is added by keys, "
+          "then an exception is thrown")
+  {
+    graph.addNode(test::NODE_A);
+    REQUIRE_THROWS_AS(
+          graph.addEdge(keyGetter(test::NODE_X), keyGetter(test::NODE_A)),
+          NoSuchNodeException);
+  }
+
+  SECTION("When an edge with non-existent head is added by keys, "
+          "then an exception is thrown")
+  {
+    graph.addNode(test::NODE_A);
+    REQUIRE_THROWS_AS(
+          graph.addEdge(keyGetter(test::NODE_A), keyGetter(test::NODE_X)),
+          NoSuchNodeException);
+  }
+
+  SECTION("When an edge with non-existent tail is added by objects, "
+          "then an exception is thrown")
+  {
+    graph.addNode(test::NODE_A);
+    REQUIRE_THROWS_AS(
+          graph.addEdge(test::NODE_X, test::NODE_A),
+          NoSuchNodeException);
+  }
+
+  SECTION("When an edge with non-existent head is added by objects, "
+          "then an exception is thrown")
+  {
+    graph.addNode(test::NODE_A);
+    REQUIRE_THROWS_AS(
+          graph.addEdge(test::NODE_A, test::NODE_X),
+          NoSuchNodeException);
   }
 }
 
@@ -335,6 +438,100 @@ TEST_CASE("Testing graph topological sorting", "[graph_ts]")
     auto sorted = graph.topologicalSort();
 
     REQUIRE(sorted.size() == graph.size());
+  }
+
+}
+
+TEST_CASE("Testing finding cycles", "[graph_cycles]")
+{
+  auto keyGetter = [](const test::User& user){return user.getLogin();};
+  DirectedGraph<std::string, test::User> graph(keyGetter);
+
+  SECTION("When the graph has no cycles, "
+          "then no cycles are found")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addNode(test::NODE_B);
+    graph.addNode(test::NODE_C);
+
+    graph.addEdge(test::NODE_A, test::NODE_B);
+    graph.addEdge(test::NODE_A, test::NODE_C);
+
+    auto cycle = graph.findCycle();
+
+    REQUIRE(cycle.empty());
+  }
+
+  SECTION("When the graph starts with a cycle, "
+          "then the cycle is found")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addNode(test::NODE_B);
+    graph.addNode(test::NODE_C);
+
+    graph.addEdge(test::NODE_A, test::NODE_B);
+    graph.addEdge(test::NODE_B, test::NODE_C);
+    graph.addEdge(test::NODE_C, test::NODE_A);
+
+    auto cycle = graph.findCycle();
+
+    auto it = cycle.begin();
+    REQUIRE(cycle.size() == 3);
+    REQUIRE(*it == test::NODE_A); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_B); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_C); std::advance(it, 1);
+    REQUIRE(it == cycle.end());
+  }
+
+  SECTION("When the graph is connected and has a cycle in a path, "
+          "then the cycle is found")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addNode(test::NODE_B);
+    graph.addNode(test::NODE_C);
+    graph.addNode(test::NODE_D);
+    graph.addNode(test::NODE_E);
+
+    graph.addEdge(test::NODE_A, test::NODE_B);
+    graph.addEdge(test::NODE_B, test::NODE_C);
+    graph.addEdge(test::NODE_C, test::NODE_D);
+    graph.addEdge(test::NODE_D, test::NODE_B);
+    graph.addEdge(test::NODE_E, test::NODE_D); // one extra node not in the path
+
+    auto cycle = graph.findCycle();
+
+    auto it = cycle.begin();
+    REQUIRE(cycle.size() == 3);
+    REQUIRE(*it == test::NODE_B); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_C); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_D); std::advance(it, 1);
+    REQUIRE(it == cycle.end());
+  }
+
+  SECTION("When the graph is disconnected and has a cycle in the latter subgraph, "
+          "then the cycle is found")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addNode(test::NODE_B);
+    graph.addNode(test::NODE_C);
+    graph.addEdge(test::NODE_A, test::NODE_B);
+    graph.addEdge(test::NODE_B, test::NODE_C);
+
+    graph.addNode(test::NODE_D);
+    graph.addNode(test::NODE_E);
+    graph.addNode(test::NODE_F);
+    graph.addEdge(test::NODE_D, test::NODE_E);
+    graph.addEdge(test::NODE_E, test::NODE_F);
+    graph.addEdge(test::NODE_F, test::NODE_D);
+
+    auto cycle = graph.findCycle();
+
+    auto it = cycle.begin();
+    REQUIRE(cycle.size() == 3);
+    REQUIRE(*it == test::NODE_D); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_E); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_F); std::advance(it, 1);
+    REQUIRE(it == cycle.end());
   }
 
 }
