@@ -238,10 +238,6 @@ const User NODE_H {"h", 32};
 const User NODE_I {"i", 33};
 const User NODE_J {"j", 34};
 const User NODE_K {"k", 35};
-const User NODE_L {"l", 36};
-const User NODE_M {"m", 37};
-const User NODE_N {"n", 38};
-const User NODE_O {"o", 39};
 
 const User NODE_X {"x", 100};
 
