@@ -33,9 +33,9 @@ class DirectedGraph
 {
 public:
   using KeyProvider = std::function<K (const T& data)>;
-  //using RoutedNodes = std::list<std::reference_wrapper<T>>;
   using SortedNodes = std::list<T>;
   using Cycle = std::list<T>;
+  using Cycles = std::list<Cycle>;
 
   DirectedGraph(KeyProvider keyProvider)
     : getKey {keyProvider} {}
@@ -94,22 +94,42 @@ public:
     return sortedNodes;
   }
 
-  Cycle findCycle()
+  Cycles findCycles()
   {
     BoolNodes visited(nodes.size(), false);
+    Cycles cycles;
     Cycle cycle;
 
     for (Index i = 0; i < nodes.size(); ++i) {
       if (!visited.at(i)) {
         advanceFindCycle(i, cycle, visited);
+        if (!cycle.empty()) {
+          cycles.push_back(cycle);
+          cycle.clear();
+        }
       }
-      if (!cycle.empty()) {
-        break;
-      }
+
     }
 
-    return cycle;
+    return cycles;
   }
+
+//  Cycle findCycle()
+//  {
+//    BoolNodes visited(nodes.size(), false);
+//    Cycle cycle;
+
+//    for (Index i = 0; i < nodes.size(); ++i) {
+//      if (!visited.at(i)) {
+//        advanceFindCycle(i, cycle, visited);
+//      }
+//      if (!cycle.empty()) {
+//        break;
+//      }
+//    }
+
+//    return cycle;
+//  }
 
 private:
 
@@ -457,13 +477,54 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
     graph.addEdge(test::NODE_A, test::NODE_B);
     graph.addEdge(test::NODE_A, test::NODE_C);
 
-    auto cycle = graph.findCycle();
+    auto cycle = graph.findCycles();
 
     REQUIRE(cycle.empty());
   }
 
-  SECTION("When the graph starts with a cycle, "
+  SECTION("When the graph has only one node connected with itself, "
           "then the cycle is found")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addEdge(test::NODE_A, test::NODE_A);
+
+    auto cycles = graph.findCycles();
+    REQUIRE(cycles.size() == 1);
+  }
+
+  SECTION("When the graph contains a cycle, "
+          "then the cycle is found")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addNode(test::NODE_B);
+
+    graph.addEdge(test::NODE_A, test::NODE_B);
+    graph.addEdge(test::NODE_B, test::NODE_A);
+
+    auto cycles = graph.findCycles();
+    REQUIRE(cycles.size() == 1);
+  }
+
+  SECTION("When the graph contains multiple, disconnected cycles, "
+          "then all the cycles are found")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addNode(test::NODE_B);
+    graph.addEdge(test::NODE_A, test::NODE_B);
+    graph.addEdge(test::NODE_B, test::NODE_A);
+
+    graph.addNode(test::NODE_C);
+    graph.addNode(test::NODE_D);
+    graph.addEdge(test::NODE_C, test::NODE_D);
+    graph.addEdge(test::NODE_D, test::NODE_C);
+
+
+    auto cycles = graph.findCycles();
+    REQUIRE(cycles.size() == 2);
+  }
+
+  SECTION("When a cycle is found at the begining of the graph, "
+          "then all the elements of that cycle are returned")
   {
     graph.addNode(test::NODE_A);
     graph.addNode(test::NODE_B);
@@ -473,18 +534,19 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
     graph.addEdge(test::NODE_B, test::NODE_C);
     graph.addEdge(test::NODE_C, test::NODE_A);
 
-    auto cycle = graph.findCycle();
+    auto cycles = graph.findCycles();
+    auto cycle = cycles.front();
 
     auto it = cycle.begin();
-    REQUIRE(cycle.size() == 3);
     REQUIRE(*it == test::NODE_A); std::advance(it, 1);
     REQUIRE(*it == test::NODE_B); std::advance(it, 1);
     REQUIRE(*it == test::NODE_C); std::advance(it, 1);
     REQUIRE(it == cycle.end());
   }
 
-  SECTION("When the graph is connected and has a cycle in a path, "
-          "then the cycle is found")
+
+  SECTION("When a cycle is found in the middle of the graph, "
+          "then all the elements of that cycle are returned")
   {
     graph.addNode(test::NODE_A);
     graph.addNode(test::NODE_B);
@@ -498,10 +560,10 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
     graph.addEdge(test::NODE_D, test::NODE_B);
     graph.addEdge(test::NODE_E, test::NODE_D); // one extra node not in the path
 
-    auto cycle = graph.findCycle();
+    auto cycles = graph.findCycles();
+    auto cycle = cycles.front();
 
     auto it = cycle.begin();
-    REQUIRE(cycle.size() == 3);
     REQUIRE(*it == test::NODE_B); std::advance(it, 1);
     REQUIRE(*it == test::NODE_C); std::advance(it, 1);
     REQUIRE(*it == test::NODE_D); std::advance(it, 1);
@@ -509,7 +571,7 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
   }
 
   SECTION("When the graph is disconnected and has a cycle in the latter subgraph, "
-          "then the cycle is found")
+          "then all the elements of that cycle are returned")
   {
     graph.addNode(test::NODE_A);
     graph.addNode(test::NODE_B);
@@ -524,15 +586,55 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
     graph.addEdge(test::NODE_E, test::NODE_F);
     graph.addEdge(test::NODE_F, test::NODE_D);
 
-    auto cycle = graph.findCycle();
+    auto cycles = graph.findCycles();
+    auto cycle = cycles.front();
 
     auto it = cycle.begin();
-    REQUIRE(cycle.size() == 3);
     REQUIRE(*it == test::NODE_D); std::advance(it, 1);
     REQUIRE(*it == test::NODE_E); std::advance(it, 1);
     REQUIRE(*it == test::NODE_F); std::advance(it, 1);
     REQUIRE(it == cycle.end());
   }
+
+  SECTION("When the graph is disconnected and contains multiple cycles, "
+          "then all returned cycles contains their nodes")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addNode(test::NODE_B);
+    graph.addNode(test::NODE_C);
+    graph.addEdge(test::NODE_A, test::NODE_B);
+    graph.addEdge(test::NODE_B, test::NODE_C);
+    graph.addEdge(test::NODE_C, test::NODE_A);
+
+    graph.addNode(test::NODE_D);
+    graph.addNode(test::NODE_E);
+    graph.addNode(test::NODE_F);
+    graph.addEdge(test::NODE_D, test::NODE_E);
+    graph.addEdge(test::NODE_E, test::NODE_F);
+    graph.addEdge(test::NODE_F, test::NODE_D);
+
+    auto cycles = graph.findCycles();
+    auto cyclesIt = cycles.begin();
+    auto cycle1 = *cyclesIt;
+    auto it = cycle1.begin();
+
+    REQUIRE(cycle1.size() == 3);
+    REQUIRE(*it == test::NODE_A); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_B); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_C); std::advance(it, 1);
+    REQUIRE(it == cycle1.end());
+
+    std::advance(cyclesIt, 1);
+    auto cycle2 = *cyclesIt;
+    it = cycle2.begin();
+
+    REQUIRE(cycle2.size() == 3);
+    REQUIRE(*it == test::NODE_D); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_E); std::advance(it, 1);
+    REQUIRE(*it == test::NODE_F); std::advance(it, 1);
+    REQUIRE(it == cycle2.end());
+  }
+
 
 }
 
