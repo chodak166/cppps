@@ -3,22 +3,22 @@
 // See accompanying file LICENSE.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
-#ifndef IAPPLICATION_H
-#define IAPPLICATION_H
+#ifndef ICLI_H
+#define ICLI_H
 
 #include <memory>
 
 namespace cppps {
 
-class IApplication
+class ICli
 {
 public:
-  virtual ~IApplication() = default;
+  virtual ~ICli() = default;
 
 };
 
-using IApplicationPtr = std::shared_ptr<IApplication>;
+using ICliPtr = std::shared_ptr<ICli>;
 
 } // namespace cppps
 
-#endif // IAPPLICATION_H
+#endif // ICLI_H

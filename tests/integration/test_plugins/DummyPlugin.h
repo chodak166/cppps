@@ -19,11 +19,17 @@ public:
   // IPlugin interface
   std::string getName() const override {return name;}
   std::string getVersionString() const override {return version;}
-  void prepare(const cppps::IApplicationPtr&) override {};
-
+  void prepare(const cppps::ICliPtr&) override {};
+  void submitProviders(cppps::Providers&) override {};
+  void submitConsumers(cppps::Consumers&) override {};
+  void initialize() override {}
+  void start() override {}
+  void stop() override {}
+  void unload() override {}
 private:
   std::string name {"unnamed plugin"};
   std::string version {"0.0.1"};
+
 };
 
 #endif // DUMMYPLUGIN_H

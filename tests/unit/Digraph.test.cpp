@@ -3,15 +3,14 @@
 // See accompanying file LICENSE.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
+#include "cppps/Digraph.h"
 
 #include <catch2/catch.hpp>
 //#include <fakeit/catch/fakeit.hpp>
 
 #include <nixlab/stdeasylog> //TODO: remove
 
-#include <list>
-#include <set>
-#include <map>
+
 
 //NOTE: use -Wno-disabled-macro-expansion to suppress fakeit macro warnings
 //using namespace fakeit;
@@ -20,167 +19,6 @@ namespace {
 
 }
 
-class DuplicatedNodeException: public std::runtime_error {
-  using runtime_error::runtime_error;
-};
-
-class NoSuchNodeException: public std::runtime_error {
-  using runtime_error::runtime_error;
-};
-
-template <class K, class T>
-class DirectedGraph
-{
-public:
-  using KeyProvider = std::function<K (const T& data)>;
-  using SortedNodes = std::list<T>;
-  using Cycle = std::list<T>;
-  using Cycles = std::list<Cycle>;
-
-  DirectedGraph(KeyProvider keyProvider)
-    : getKey {keyProvider} {}
-
-  virtual ~DirectedGraph() = default;
-
-  size_t size() const {return nodes.size();}
-
-  void addNode(T data)
-  {
-    K key = getKey(data);
-    if (keyIndexMap.find(key) != keyIndexMap.end()) {
-      throw DuplicatedNodeException("Directed Graph error: the node with key "
-                                    + key + " already exists");
-    }
-    nodes.push_back({data, {}});
-    keyIndexMap.insert(std::make_pair(key, nodes.size() - 1));
-  }
-
-//  void addNode(T&& data)
-//  {
-
-//  }
-
-  void addEdge(const K& startNode, const K& endNode)
-  {
-    auto startIt = keyIndexMap.find(startNode);
-    if (startIt == keyIndexMap.end()) {
-      throw NoSuchNodeException("No such node: " + startNode);
-    }
-
-    auto endIt = keyIndexMap.find(endNode);
-    if (endIt == keyIndexMap.end()) {
-      throw NoSuchNodeException("No such node: " + endNode);
-    }
-
-    nodes[startIt->second].nextNodes.insert(endIt->second);
-  }
-
-  void addEdge(const T& startNode, const T& endNode)
-  {
-    addEdge(getKey(startNode), getKey(endNode));
-  }
-
-  SortedNodes topologicalSort()
-  {
-    SortedNodes sortedNodes;
-    BoolNodes visited(nodes.size(), false);
-
-    for (Index i = 0; i < nodes.size(); ++i) {
-      if (!visited.at(i)) {
-        advanceTopologicalSort(i, sortedNodes, visited);
-      }
-    }
-
-    return sortedNodes;
-  }
-
-  Cycles findCycles()
-  {
-    BoolNodes visited(nodes.size(), false);
-    Cycles cycles;
-    Cycle cycle;
-
-    for (Index i = 0; i < nodes.size(); ++i) {
-      if (!visited.at(i)) {
-        advanceFindCycle(i, cycle, visited);
-        if (!cycle.empty()) {
-          cycles.push_back(cycle);
-          cycle.clear();
-        }
-      }
-
-    }
-
-    return cycles;
-  }
-
-//  Cycle findCycle()
-//  {
-//    BoolNodes visited(nodes.size(), false);
-//    Cycle cycle;
-
-//    for (Index i = 0; i < nodes.size(); ++i) {
-//      if (!visited.at(i)) {
-//        advanceFindCycle(i, cycle, visited);
-//      }
-//      if (!cycle.empty()) {
-//        break;
-//      }
-//    }
-
-//    return cycle;
-//  }
-
-private:
-
-  using Index = size_t;
-  using BoolNodes = std::vector<bool>;
-
-  struct Node
-  {
-    T data;
-    std::set<Index> nextNodes;
-  };
-
-  KeyProvider getKey;
-  std::vector<Node> nodes;
-  std::unordered_map<K, Index> keyIndexMap;
-
-private:
-
-  void advanceTopologicalSort(Index index, SortedNodes& sortedNodes, BoolNodes& visited)
-  {
-    visited[index] = true;
-
-    auto& node = nodes.at(index);
-    for (auto& nextNodeIndex: node.nextNodes) {
-      if (!visited.at(nextNodeIndex)) {
-        advanceTopologicalSort(nextNodeIndex, sortedNodes, visited);
-      }
-    }
-
-    sortedNodes.push_back(node.data);
-  }
-
-  void advanceFindCycle(Index index, Cycle& cycle, BoolNodes& visited)
-  {
-    visited[index] = true;
-
-    auto& node = nodes.at(index);
-    for (auto& nextNodeIndex: node.nextNodes) {
-      if (visited.at(nextNodeIndex)) {
-        for (Index i = nextNodeIndex; i <= index; ++i) {
-          cycle.push_back(nodes.at(i).data);
-        }
-        break;
-      }
-      else {
-        advanceFindCycle(nextNodeIndex, cycle, visited);
-      }
-    }
-  }
-
-};
 
 namespace test {
 namespace {
@@ -247,7 +85,7 @@ const User NODE_X {"x", 100};
 TEST_CASE("Testing graph editing", "[graph_ed]")
 {
   auto keyGetter = [](const test::User& user){return user.getLogin();};
-  DirectedGraph<std::string, test::User> graph(keyGetter);
+  Digraph<std::string, test::User> graph(keyGetter);
 
 
   SECTION("When no nodes were added to the graph, "
@@ -308,13 +146,27 @@ TEST_CASE("Testing graph editing", "[graph_ed]")
           graph.addEdge(test::NODE_A, test::NODE_X),
           NoSuchNodeException);
   }
+
+  SECTION("When an existing node is requested by its key, "
+          "then requested node is returned")
+  {
+    graph.addNode(test::NODE_A);
+    auto& node = graph.getNode(keyGetter(test::NODE_A));
+    REQUIRE(node == test::NODE_A);
+  }
+
+  SECTION("When a non-existent node is requested by a key, "
+          "then an exception is thrown")
+  {
+    REQUIRE_THROWS_AS(graph.getNode(keyGetter(test::NODE_X)), NoSuchNodeException);
+  }
 }
 
 
 TEST_CASE("Testing graph topological sorting", "[graph_ts]")
 {
   auto keyGetter = [](const test::User& user){return user.getLogin();};
-  DirectedGraph<std::string, test::User> graph(keyGetter);
+  Digraph<std::string, test::User> graph(keyGetter);
 
   SECTION("When the nodes are added to the graph, "
           "then the size of the graph can be calculated")
@@ -461,7 +313,7 @@ TEST_CASE("Testing graph topological sorting", "[graph_ts]")
 TEST_CASE("Testing finding cycles", "[graph_cycles]")
 {
   auto keyGetter = [](const test::User& user){return user.getLogin();};
-  DirectedGraph<std::string, test::User> graph(keyGetter);
+  Digraph<std::string, test::User> graph(keyGetter);
 
   SECTION("When the graph has no cycles, "
           "then no cycles are found")
