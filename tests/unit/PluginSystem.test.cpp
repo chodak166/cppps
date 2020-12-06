@@ -30,44 +30,13 @@ namespace {
 class Resource
 {
 public:
-  Resource() {}
-  //Resource(int value) {object = value;}
-//  Resource(Resource&& other) {object = other.object;}
-//  Resource(const Resource& other) {object = other.object;}
-//  Resource(const std::any& object): object{object} {}
-//  Resource(std::any object): object{object} {}
-//  Resource(std::any&& object): object{object} {}
-
-//  template<class T>
-//  Resource(const T& value) {object = value;}
+  Resource() = delete;
 
   template<class T>
   Resource(T&& value)
   {
     object = std::move(value);
   }
-
-  template<class T>
-  Resource(const T& value)
-  {
-    object = value;
-  }
-
-  Resource& operator=(const std::any& object)
-  {
-    this->object = object;
-    return *this;
-  }
-
-  Resource& operator=(std::any&& object)
-  {
-    this->object = std::move(object);
-    return *this;
-  }
-
-//  operator std::any() {
-//    return *this;
-//  }
 
   template<class T>
   T as() const
@@ -137,6 +106,10 @@ private:
 }
 
 class UnresolvedDependencyException: public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
+class CircularDependencyException: public std::runtime_error {
   using runtime_error::runtime_error;
 };
 
@@ -213,6 +186,22 @@ public:
         }
         graph.addEdge(plugin->getName(), providerOriginIt->second);
       }
+    }
+
+    auto cycles = graph.findCycles();
+
+    if (!cycles.empty()) {
+      std::ostringstream message;
+      message << "Curcular dependencies have been found: ";
+      int n = 1;
+      for (const auto& cycle: cycles) {
+        message << "(" << n << ") ";
+        for (const auto& node: cycle) {
+          message << node.plugin->getName() << " -> ";
+        }
+        message << cycle.front().plugin->getName() << "; ";
+      }
+      throw CircularDependencyException(message.str());
     }
 
     // init
@@ -338,7 +327,7 @@ struct Fixture
     Fake(Method(pluginA, submitConsumers));
     When(Method(pluginA, submitProviders)).Do([](Providers& providers) {
       auto providerA = []() {
-        return Resource(std::make_shared<ProductA>(test::PRODUCT_A_VALUE)); //TODO implitic conv
+        return std::make_shared<ProductA>(test::PRODUCT_A_VALUE);
       };
       providers.add(test::PRODUCT_A_KEY, providerA);
     });
@@ -406,6 +395,16 @@ TEST_CASE_METHOD(test::Fixture, "Testing plugins initialization", "[ps_init]")
     pluginSystem.mergePlugins(extraPlugins);
 
     REQUIRE_THROWS_AS(pluginSystem.initialize(), UnresolvedDependencyException);
+  }
+
+  SECTION("When plugin dependencies create a cycle, then an exception is thrown")
+  {
+    When(Method(pluginA, submitConsumers)).Do([](Consumers& consumers) {
+      auto consumer = [](const Resource&) {};
+      consumers.add(test::PRODUCT_A_KEY, consumer);
+    });
+
+    REQUIRE_THROWS_AS(pluginSystem.initialize(), CircularDependencyException);
   }
 
 }
