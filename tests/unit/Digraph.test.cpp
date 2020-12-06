@@ -8,10 +8,6 @@
 #include <catch2/catch.hpp>
 //#include <fakeit/catch/fakeit.hpp>
 
-#include <nixlab/stdeasylog> //TODO: remove
-
-
-
 //NOTE: use -Wno-disabled-macro-expansion to suppress fakeit macro warnings
 //using namespace fakeit;
 

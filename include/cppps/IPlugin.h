@@ -25,6 +25,7 @@ public:
   virtual ~IPlugin() = default;
   virtual std::string getName() const = 0;
   virtual std::string getVersionString() const = 0;
+  // virtual bool isCritical() const = 0; //TODO
   virtual void prepare(const ICliPtr& app) = 0;
   virtual void submitProviders(Providers& providers) = 0;
   virtual void submitConsumers(Consumers& providers) = 0;

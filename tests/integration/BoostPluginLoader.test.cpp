@@ -17,8 +17,6 @@
 
 #include <filesystem>
 
-#include <nixlab/stdeasylog>
-
 //NOTE: use -Wno-disabled-macro-expansion to suppress fakeit macro warnings
 //using namespace fakeit;
 

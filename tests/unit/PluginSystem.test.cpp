@@ -10,8 +10,6 @@
 #include <catch2/catch.hpp>
 #include <fakeit/single_header/catch/fakeit.hpp>
 
-#include <nixlab/stdeasylog> //TODO: remove
-
 #include <map>
 #include <string_view>
 #include <vector>
@@ -47,14 +45,12 @@ public:
   Resource(T&& value)
   {
     object = std::move(value);
-    LOG(DEBUG) << "Move constructor used with type: " << object.type().name();
   }
 
   template<class T>
   Resource(const T& value)
   {
     object = value;
-    LOG(DEBUG) << "Ref template constructor used with type: " << object.type().name();
   }
 
   Resource& operator=(const std::any& object)
@@ -140,6 +136,10 @@ private:
 
 }
 
+class UnresolvedDependencyException: public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
 using PluginDigraph = Digraph<std::string, PluginHandle>;
 
 class IPluginSystem
@@ -206,13 +206,17 @@ public:
       auto& handle = graph.getNode(plugin->getName());
       for (const auto& [key, consumer]: handle.consumers) {
         auto providerOriginIt = providerOrigins.find(key);
-        //TODO: exception if not found
+        if (providerOriginIt == providerOrigins.end()) {
+          throw UnresolvedDependencyException("Unresolved dependency: resource '"
+                                              + key + "' required by plugin '"
+                                              + plugin->getName() + "' not found");
+        }
         graph.addEdge(plugin->getName(), providerOriginIt->second);
       }
     }
 
     // init
-    sortedPlugins = graph.topologicalSort();
+    auto sortedPlugins = graph.topologicalSort();
     for (auto& handle: sortedPlugins) {
       auto& plugin = handle.plugin;
 
@@ -259,7 +263,6 @@ private:
   IPluginSystemPtr dependencyResolver {nullptr};
   LoadedPlugins plugins;
   LoadedPlugins orderedPlugins;
-  PluginDigraph::SortedNodes sortedPlugins;
 };
 
 
@@ -276,8 +279,10 @@ namespace {
 
 constexpr auto PLUGIN_A_NAME = "A";
 constexpr auto PLUGIN_B_NAME = "B";
+constexpr auto PLUGIN_C_NAME = "C";
 constexpr auto PRODUCT_A_KEY = "product_a";
 constexpr auto PRODUCT_A_VALUE = "the value of product A";
+constexpr auto PRODUCT_X_KEY = "product_x";
 const std::string PREPARE_TAG = "_init";
 const std::string INIT_TAG = "_init";
 const std::string START_TAG = "_start";
@@ -289,6 +294,7 @@ struct Fixture
   fakeit::Mock<ICli> cli;
   fakeit::Mock<IPlugin> pluginA;
   fakeit::Mock<IPlugin> pluginB;
+  fakeit::Mock<IPlugin> pluginC;
   fakeit::Mock<IPluginSystem> depResolver;
 
   ICliPtr cliPtr = cli.getFakePtr();
@@ -298,10 +304,6 @@ struct Fixture
   std::vector<std::string> processedPlugins;
 
   ProductAPtr productAPtr {nullptr};
-  //  std::vector<std::string> preparedPlugins;
-//  std::vector<std::string> initializedPlugins;
-//  std::vector<std::string> startedPlugins;
-//  std::vector<std::string> stoppedPlugins;
 
   Fixture()
   {
@@ -311,6 +313,7 @@ struct Fixture
 
     setupLifecycleMethods(pluginA, test::PLUGIN_A_NAME);
     setupLifecycleMethods(pluginB, test::PLUGIN_B_NAME);
+    setupLifecycleMethods(pluginC, test::PLUGIN_C_NAME);
     setupPluginADependencies();
     setupPluginBDependencies();
   }
@@ -333,7 +336,6 @@ struct Fixture
   void setupPluginADependencies()
   {
     Fake(Method(pluginA, submitConsumers));
-
     When(Method(pluginA, submitProviders)).Do([](Providers& providers) {
       auto providerA = []() {
         return Resource(std::make_shared<ProductA>(test::PRODUCT_A_VALUE)); //TODO implitic conv
@@ -345,14 +347,12 @@ struct Fixture
   void setupPluginBDependencies()
   {
     Fake(Method(pluginB, submitProviders));
-
     When(Method(pluginB, submitConsumers)).Do([this](Consumers& consumers) {
       auto consumer = [this](const Resource& res) {
         productAPtr = res.as<ProductAPtr>();
       };
       consumers.add(test::PRODUCT_A_KEY, consumer);
     });
-
   }
 
 };
@@ -392,6 +392,22 @@ TEST_CASE_METHOD(test::Fixture, "Testing plugins initialization", "[ps_init]")
     REQUIRE(productAPtr != nullptr);
     REQUIRE(productAPtr->value == test::PRODUCT_A_VALUE);
   }
+
+  SECTION("When consumer requirements are not satisfied, then an exception is thrown")
+  {
+    Fake(Method(pluginC, submitProviders));
+    When(Method(pluginC, submitConsumers)).Do([](Consumers& consumers) {
+      auto consumer = [](const Resource&) {};
+      consumers.add(test::PRODUCT_X_KEY, consumer);
+    });
+
+    PluginSystem::LoadedPlugins extraPlugins;
+    extraPlugins.emplace_back(IPluginDPtr(&pluginC.get(), [](auto*){}));
+    pluginSystem.mergePlugins(extraPlugins);
+
+    REQUIRE_THROWS_AS(pluginSystem.initialize(), UnresolvedDependencyException);
+  }
+
 }
 
 
@@ -422,6 +438,8 @@ TEST_CASE_METHOD(test::Fixture, "Testing plugin life cycle", "[ps_cycle]")
     REQUIRE(processedPlugins.at(0) == test::PLUGIN_B_NAME + test::UNLOAD_TAG);
     REQUIRE(processedPlugins.at(1) == test::PLUGIN_A_NAME + test::UNLOAD_TAG);
   }
+
+  //TODO: should the unload() method be called after an exception is thrown?
 
 }
 
