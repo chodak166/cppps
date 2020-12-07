@@ -20,8 +20,8 @@ public:
   std::string getName() const override {return name;}
   std::string getVersionString() const override {return version;}
   void prepare(const cppps::ICliPtr&) override {};
-  void submitProviders(cppps::Providers&) override {};
-  void submitConsumers(cppps::Consumers&) override {};
+  void submitProviders(const cppps::SubmitProvider&) override {};
+  void submitConsumers(const cppps::SubmitConsumer&) override {};
   void initialize() override {}
   void start() override {}
   void stop() override {}

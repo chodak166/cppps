@@ -36,6 +36,8 @@ target_link_libraries(${PROJECT_NAME}
   dl
   )
 
+enable_testing(ON)
+
 option(CPPPS_UNIT_TESTS_BUILD "Build CPPPS unit tests")
 if (${CPPPS_UNIT_TESTS_BUILD})
   add_subdirectory(tests/unit)

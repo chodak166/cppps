@@ -4,11 +4,10 @@
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
 
-#include "cppps/IPlugin.h"
+#include "cppps/BoostPluginLoader.h"
 #include "cppps/exceptions.h"
 
 #include <catch2/catch.hpp>
-//#include <fakeit/catch/fakeit.hpp>
 
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/dll/shared_library.hpp>
@@ -17,75 +16,8 @@
 
 #include <filesystem>
 
-//NOTE: use -Wno-disabled-macro-expansion to suppress fakeit macro warnings
-//using namespace fakeit;
-
-namespace {
-
-struct PluginDeleter
-{
-  using LibType = boost::dll::shared_library;
-  using LibTypePtr = std::shared_ptr<LibType>;
-  PluginDeleter(const LibTypePtr& library)
-    : library{library}{};
-
-  void operator()(cppps::IPlugin* object)
-  {
-    if (object) {
-      delete object;
-    }
-  }
-
-private:
-  LibTypePtr library {nullptr};
-};
-
-
-cppps::IPluginDPtr bind(cppps::IPluginUPtr&& plugin, PluginDeleter::LibTypePtr& lib)
-{
-  auto rawPlugin = plugin.get();
-  plugin.release();
-  auto bindedPtr = cppps::IPluginDPtr(rawPlugin, PluginDeleter(lib));
-  return bindedPtr;
-}
-
-}
-
-class IPluginLoader
-{
-public:
-  virtual ~IPluginLoader() = default;
-  virtual cppps::IPluginDPtr load(std::string_view path) = 0;
-};
-
-class BoostPluginLoader: public IPluginLoader
-{
-public:
-  cppps::IPluginDPtr load(std::string_view path) override
-  {
-    if (!std::filesystem::exists(path)) {
-      throw cppps::PluginNotFoundException(std::string("Plugin file not found: ") + path.data());
-    }
-
-    std::function<cppps::IPluginUPtr()> makePlugin {nullptr};
-    std::shared_ptr<boost::dll::shared_library> library {nullptr};
-
-    try {
-      library = std::make_shared<boost::dll::shared_library>(path.data(),
-                                                             boost::dll::load_mode::append_decorations);
-      makePlugin = library->get_alias<cppps::IPluginUPtr()>("make_plugin");
-    }
-    catch (boost::system::system_error& e) {
-      throw cppps::MakePluginNotFoundException(std::string(
-                                                 "The required symbol 'make_plugin' has not been found in ")
-                                               + path.data());
-    }
-
-    auto plugin = bind(makePlugin(), library);
-    return plugin;
-  }
-};
-
+using cppps::BoostPluginLoader;
+using cppps::PluginDeleter;
 
 namespace test {
 namespace {
@@ -107,7 +39,6 @@ const auto BAD_PLUGIN_PATH = PLUGIN_DIR + "/libplugin_bad." + getPluginExtension
 
 TEST_CASE("Testing plugin loader successful library import", "[pl_success]")
 {
-
   BoostPluginLoader loader;
 
   SECTION("When a single plugin is loaded, then the returned object is not null")

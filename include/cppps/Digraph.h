@@ -11,7 +11,7 @@
 #include <set>
 #include <map>
 
-//TODO: refactor/optimize/namespace
+namespace cppps {
 
 class DuplicatedNodeException: public std::runtime_error {
   using runtime_error::runtime_error;
@@ -56,11 +56,6 @@ public:
     }
     return nodes[it->second].data;
   }
-
-//  void addNode(T&& data)
-//  {
-
-//  }
 
   void addEdge(const K& startNode, const K& endNode)
   {
@@ -164,6 +159,8 @@ private:
   }
 
 };
+
+} // namespace cppps
 
 
 #endif // DIGRAPH_H

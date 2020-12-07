@@ -16,6 +16,7 @@ add_test_executable(TARGET plugin-loader-test
   SOURCES
   BoostPluginLoader.test.cpp
   main.cpp
+  ${PROJECT_ROOT}/src/BoostPluginLoader.cpp
 
   LIBS
   ${COMMON_LIBS}
@@ -27,6 +28,7 @@ add_test_executable(TARGET plugin-loader-test
 add_test_executable(TARGET plugin-collector-test
   SOURCES
   PluginCollector.test.cpp
+  ${PROJECT_ROOT}/src/PluginCollector.cpp
 
   LIBS
   ${COMMON_LIBS}

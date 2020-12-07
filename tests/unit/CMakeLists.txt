@@ -22,6 +22,7 @@ add_test_executable(TARGET digraph-test
 add_test_executable(TARGET plugin-system-test
   SOURCES
   PluginSystem.test.cpp
+  ${PROJECT_ROOT}/src/PluginSystem.cpp
 
   LIBS
   ${COMMON_LIBS}

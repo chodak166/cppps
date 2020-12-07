@@ -4,12 +4,12 @@
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
 
+#include "cppps/PluginCollector.h"
 #include "cppps/IPlugin.h"
 #include "cppps/exceptions.h"
 
 #define CATCH_CONFIG_EXTERNAL_INTERFACES
 #include <catch2/catch.hpp>
-//#include <fakeit/catch/fakeit.hpp>
 
 #include <filesystem>
 #include <fstream>
@@ -18,155 +18,7 @@
 #include <list>
 #include <regex>
 
-//NOTE: use -Wno-disabled-macro-expansion to suppress fakeit macro warnings
-//using namespace fakeit;
-
-namespace {
-
-constexpr auto FULL_VERSION_MATCH_SIZE = 3;
-constexpr auto NAME_MATCH_INDEX = 1;
-constexpr auto VERSION_MATCH_INDEX = 2;
-
-}
-
-class PluginCollector
-{
-public:
-  using Paths = std::list<std::string>;
-
-  virtual ~PluginCollector() = default;
-
-  void addPluginExtension(std::string_view extension)
-  {
-    extensions.emplace_back(extension);
-  }
-
-  void addDirectory(std::string_view dir)
-  {
-    dirs.emplace_back(dir);
-  }
-
-  void enablePathEnvVariable(std::string_view name)
-  {
-    pathEnvVariableName = name;
-  }
-
-  void enableFileEnvVariable(std::string_view name)
-  {
-    fileEnvVariableName = name;
-  }
-
-  Paths collectPlugins()
-  {
-    Paths paths;
-    PathMap pathMap;
-
-    if (!fileEnvVariableName.empty()) {
-      appendEnvVariableFiles(paths);
-    }
-
-    if (!pathEnvVariableName.empty()) {
-      addEnvVariableDirectories();
-    }
-
-    appendDirectoriesScanResults(pathMap);
-
-    transform(pathMap.begin(), pathMap.end(), std::back_inserter(paths),
-              [](const PathMap::value_type& val){return val.second.path;} );
-
-    return paths;
-  }
-
-private:
-
-  struct PathEntry
-  {
-    bool valid {false};
-    std::filesystem::path path;
-    std::string name;
-    std::string version;
-  };
-
-  using PathMap = std::map<std::string /*name*/, PathEntry>;
-  std::list<std::string> extensions;
-  std::list<std::string> dirs;
-  std::string pathEnvVariableName;
-  std::string fileEnvVariableName;
-
-private:
-
-  void appendDirectoriesScanResults(PathMap& paths)
-  {
-    for (const auto& dir: dirs) {
-      std::filesystem::directory_iterator dirIt(dir);
-      for (const auto& path: dirIt) {
-        auto pathEntry = matchPath(path);
-        if (pathEntry.valid) {
-          auto it = paths.find(pathEntry.name);
-          if (it != paths.end()) {
-            if (it->second.version > pathEntry.version) {
-              continue;
-            }
-            it->second = pathEntry;
-          }
-          else {
-            paths.insert(std::make_pair(pathEntry.name, pathEntry));
-          }
-        }
-      }
-    }
-  }
-
-  PathEntry matchPath(const std::filesystem::path& path)
-  {
-    PathEntry entry;
-    for (const auto& extension: extensions) {
-      std::regex rgx(R"((.+\.)" + extension + R"()(\.[.0-9]*)?$)");
-      std::smatch matches;
-      auto filename = path.filename().string();
-      if (std::regex_search(filename, matches, rgx)) {
-        entry.valid = true;
-        entry.path = path;
-        entry.name = matches[NAME_MATCH_INDEX];
-        if (matches.size() == FULL_VERSION_MATCH_SIZE) {
-          entry.version = matches[VERSION_MATCH_INDEX];
-        }
-        break;
-      }
-
-    }
-    return entry;
-  }
-
-  void appendEnvVariableFiles(Paths& paths)
-  {
-    auto envValue = std::getenv(fileEnvVariableName.c_str());
-    auto files = split(envValue);
-    paths.insert(paths.end(), files.begin(), files.end());
-  }
-
-  void addEnvVariableDirectories()
-  {
-    auto envValue = std::getenv(pathEnvVariableName.c_str());
-    auto dirs = split(envValue);
-    for (const auto& dir: dirs) {
-      addDirectory(dir);
-    }
-  }
-
-  std::vector<std::string> split(std::string_view text)
-  {
-    std::vector<std::string> vector;
-    std::stringstream stream(text.data());
-    std::string item;
-    while(std::getline(stream, item, ';')) {
-        vector.push_back(item);
-    }
-    return vector;
-  }
-
-};
-
+using cppps::PluginCollector;
 
 namespace test {
 namespace {

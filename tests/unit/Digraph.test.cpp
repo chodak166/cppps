@@ -4,84 +4,62 @@
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
 #include "cppps/Digraph.h"
-
 #include <catch2/catch.hpp>
-//#include <fakeit/catch/fakeit.hpp>
 
-//NOTE: use -Wno-disabled-macro-expansion to suppress fakeit macro warnings
-//using namespace fakeit;
-
-namespace {
-
-}
-
+using cppps::Digraph;
+using cppps::DuplicatedNodeException;
+using cppps::NoSuchNodeException;
 
 namespace test {
 namespace {
 
 // test class to store in the graph
-class User
+class Data
 {
 public:
-  User(std::string_view login, int age)
-    : login{login}, age {age} {}
+  Data(std::string_view id, int value)
+    : id{id}, value {value} {}
 
-  const std::string& getLogin() const {return login;}
-  int getAge() const {return age;}
+  const std::string& getId() const {return id;}
+  int getValue() const {return value;}
 
 private:
-  const std::string login;
-  const int age;
+  const std::string id;
+  const int value;
 };
 
-bool operator<(const User& lhs, const User& rhs)
-{
-  return lhs.getLogin() < rhs.getLogin();
-}
+bool operator<(const Data& lhs, const Data& rhs);
+bool operator==(const Data& lhs, const Data& rhs);
 
-bool operator==(const User& lhs, const User& rhs)
-{
-  return lhs.getLogin() == rhs.getLogin();
-}
-
-using IndexMap = std::map<User, size_t>;
+using IndexMap = std::map<Data, size_t>;
 
 template <class T>
 using KeyGetter = std::function<std::string(const typename T::value_type)>;
 
 template <class T>
-IndexMap getIndices(const T& collection)
-{
-  IndexMap map;
-  size_t i = 0;
-  for (const auto& item: collection) {
-    map.insert(std::make_pair(item, i++));
-  }
+IndexMap getIndices(const T& collection);
 
-  return map;
-}
+const Data NODE_A {"a", 25};
+const Data NODE_B {"b", 26};
+const Data NODE_C {"c", 27};
+const Data NODE_D {"d", 28};
+const Data NODE_E {"e", 29};
+const Data NODE_F {"f", 30};
+const Data NODE_G {"g", 31};
+const Data NODE_H {"h", 32};
+const Data NODE_I {"i", 33};
+const Data NODE_J {"j", 34};
+const Data NODE_K {"k", 35};
 
-const User NODE_A {"a", 25};
-const User NODE_B {"b", 26};
-const User NODE_C {"c", 27};
-const User NODE_D {"d", 28};
-const User NODE_E {"e", 29};
-const User NODE_F {"f", 30};
-const User NODE_G {"g", 31};
-const User NODE_H {"h", 32};
-const User NODE_I {"i", 33};
-const User NODE_J {"j", 34};
-const User NODE_K {"k", 35};
-
-const User NODE_X {"x", 100};
+const Data NODE_X {"x", 100};
 
 } // namespace
 } // namespace test
 
 TEST_CASE("Testing graph editing", "[graph_ed]")
 {
-  auto keyGetter = [](const test::User& user){return user.getLogin();};
-  Digraph<std::string, test::User> graph(keyGetter);
+  auto keyGetter = [](const test::Data& user){return user.getId();};
+  Digraph<std::string, test::Data> graph(keyGetter);
 
 
   SECTION("When no nodes were added to the graph, "
@@ -161,8 +139,8 @@ TEST_CASE("Testing graph editing", "[graph_ed]")
 
 TEST_CASE("Testing graph topological sorting", "[graph_ts]")
 {
-  auto keyGetter = [](const test::User& user){return user.getLogin();};
-  Digraph<std::string, test::User> graph(keyGetter);
+  auto keyGetter = [](const test::Data& user){return user.getId();};
+  Digraph<std::string, test::Data> graph(keyGetter);
 
   SECTION("When the nodes are added to the graph, "
           "then the size of the graph can be calculated")
@@ -308,8 +286,8 @@ TEST_CASE("Testing graph topological sorting", "[graph_ts]")
 
 TEST_CASE("Testing finding cycles", "[graph_cycles]")
 {
-  auto keyGetter = [](const test::User& user){return user.getLogin();};
-  Digraph<std::string, test::User> graph(keyGetter);
+  auto keyGetter = [](const test::Data& user){return user.getId();};
+  Digraph<std::string, test::Data> graph(keyGetter);
 
   SECTION("When the graph has no cycles, "
           "then no cycles are found")
@@ -486,6 +464,27 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
 namespace test {
 namespace {
 
+bool operator<(const Data& lhs, const Data& rhs)
+{
+  return lhs.getId() < rhs.getId();
+}
+
+bool operator==(const Data& lhs, const Data& rhs)
+{
+  return lhs.getId() == rhs.getId();
+}
+
+template <class T>
+IndexMap getIndices(const T& collection)
+{
+  IndexMap map;
+  size_t i = 0;
+  for (const auto& item: collection) {
+    map.insert(std::make_pair(item, i++));
+  }
+
+  return map;
+}
 
 } // namespace
 } // namespace test

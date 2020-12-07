@@ -16,6 +16,14 @@ class PluginNotFoundException: public std::runtime_error {
 class MakePluginNotFoundException: public std::runtime_error {
   using runtime_error::runtime_error;};
 
+class UnresolvedDependencyException: public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
+class CircularDependencyException: public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
 } // namespace cppps
 
 
