@@ -148,30 +148,30 @@ TEST_CASE_METHOD(test::Fixture, "Testing plugins initialization", "[ps_init]")
     REQUIRE(productAPtr->value == test::PRODUCT_A_VALUE);
   }
 
-//  SECTION("When consumer requirements are not satisfied, then an exception is thrown")
-//  {
-//    Fake(Method(pluginC, submitProviders));
-//    When(Method(pluginC, submitConsumers)).Do([](const SubmitConsumer& submit) {
-//      auto consumer = [](const Resource&) {};
-//      submit(test::PRODUCT_X_KEY, consumer);
-//    });
+  SECTION("When consumer requirements are not satisfied, then an exception is thrown")
+  {
+    Fake(Method(pluginC, submitProviders));
+    When(Method(pluginC, submitConsumers)).Do([](const SubmitConsumer& submit) {
+      auto consumer = [](const Resource&) {};
+      submit(test::PRODUCT_X_KEY, consumer);
+    });
 
-//    PluginSystem::LoadedPlugins extraPlugins;
-//    extraPlugins.emplace_back(IPluginDPtr(&pluginC.get(), [](auto*){}));
-//    pluginSystem.mergePlugins(extraPlugins);
+    PluginSystem::LoadedPlugins extraPlugins;
+    extraPlugins.emplace_back(IPluginDPtr(&pluginC.get(), [](auto*){}));
+    pluginSystem.mergePlugins(extraPlugins);
 
-//    REQUIRE_THROWS_AS(pluginSystem.initialize(), UnresolvedDependencyException);
-//  }
+    REQUIRE_THROWS_AS(pluginSystem.initialize(), UnresolvedDependencyException);
+  }
 
-//  SECTION("When plugin dependencies create a cycle, then an exception is thrown")
-//  {
-//    When(Method(pluginA, submitConsumers)).Do([](Consumers& consumers) {
-//      auto consumer = [](const Resource&) {};
-//      consumers.add(test::PRODUCT_A_KEY, consumer);
-//    });
+  SECTION("When plugin dependencies create a cycle, then an exception is thrown")
+  {
+    When(Method(pluginA, submitConsumers)).Do([](const SubmitConsumer& submit) {
+      auto consumer = [](const Resource&) {};
+      submit(test::PRODUCT_A_KEY, consumer);
+    });
 
-//    REQUIRE_THROWS_AS(pluginSystem.initialize(), CircularDependencyException);
-//  }
+    REQUIRE_THROWS_AS(pluginSystem.initialize(), CircularDependencyException);
+  }
 
 }
 

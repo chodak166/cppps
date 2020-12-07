@@ -42,6 +42,7 @@ using PluginDigraph = Digraph<std::string, PluginHandle>;
 PluginSystem::PluginSystem(const ICliPtr& app)
   : cli {app}
 {
+  // empty
 }
 
 void PluginSystem::mergePlugins(LoadedPlugins& plugins)
@@ -56,6 +57,7 @@ void PluginSystem::prepare()
   }
 }
 
+//TODO: split
 void PluginSystem::initialize()
 {
   std::map<std::string, Resource> resources;
@@ -71,12 +73,9 @@ void PluginSystem::initialize()
     SubmitProvider submitProvider = [&handleProviders](auto key, auto& provider) {
       handleProviders.emplace_back(key, provider);
     };
-
-    //Providers providers(handleProviders, plugin->getName());
     plugin->submitProviders(submitProvider);
 
     PluginHandle::Consumers handleConsumers;
-   // Consumers consumers(handleConsumers, plugin->getName());
     SubmitConsumer submitConsumer = [&handleConsumers](auto key, const auto& consumer) {
       handleConsumers.emplace_back(key, consumer);
     };
