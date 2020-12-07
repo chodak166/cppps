@@ -5,20 +5,13 @@
 
 #include "cppps/PluginSystem.h"
 #include "cppps/Digraph.h"
-#include "cppps/IPlugin.h"
-#include "cppps/Resource.h"
 #include "cppps/exceptions.h"
 
 #include <map>
 #include <any>
 #include <sstream>
 
-using cppps::PluginSystem;
-using cppps::Digraph;
-using cppps::Resource;
-using cppps::IPluginDPtr;
-using cppps::ResourceProvider;
-using cppps::ResourceConsumer;
+using namespace cppps;
 
 namespace {
 
@@ -33,8 +26,32 @@ struct PluginHandle
   Consumers consumers;
 };
 
-
 using PluginDigraph = Digraph<std::string, PluginHandle>;
+
+class PluginInitializer
+{
+public:
+  void initializePlugins(PluginSystem::LoadedPlugins& uninitializedPlugins,
+                         PluginSystem::LoadedPlugins& initializedPlugins);
+
+private:
+  std::map<std::string, Resource> resources;
+  std::map<std::string /*resource key*/,
+           std::string /*source*/> providerOrigins;
+
+  PluginDigraph graph {
+    ([](const auto& pluginHandle) {
+      return pluginHandle.plugin->getName();
+    })
+  };
+
+private:
+  void addGraphNodes(PluginSystem::LoadedPlugins& plugins);
+  void addGraphEdges(PluginSystem::LoadedPlugins& plugins);
+  void assertNoCycles();
+  void initializePlugins(PluginSystem::LoadedPlugins& orderedPlugins);
+
+};
 
 } // namespace
 
@@ -47,48 +64,84 @@ PluginSystem::PluginSystem(const ICliPtr& app)
 
 void PluginSystem::mergePlugins(LoadedPlugins& plugins)
 {
-  this->plugins.merge(plugins);
+  this->uninitializedPlugins.merge(plugins);
 }
 
 void PluginSystem::prepare()
 {
-  for (auto& plugin: plugins) {
+  for (auto& plugin: uninitializedPlugins) {
     plugin->prepare(cli);
   }
 }
 
-//TODO: split
 void PluginSystem::initialize()
 {
-  std::map<std::string, Resource> resources;
+  PluginInitializer initializer;
+  initializer.initializePlugins(uninitializedPlugins, initializedPlugins);
+  uninitializedPlugins.clear();
+}
 
-  PluginDigraph graph([](const auto& handle){
-    return handle.plugin->getName();});
+void PluginSystem::start()
+{
+  for (auto& plugin: initializedPlugins) {
+    plugin->start();
+  }
+}
 
-  std::map<std::string /*resource key*/, std::string /*source*/> providerOrigins;
+void PluginSystem::stop()
+{
+  for (auto it = initializedPlugins.rbegin();
+       it != initializedPlugins.rend(); ++it) {
+    (*it)->stop();
+  }
+}
 
+void PluginSystem::unload()
+{
+  for (auto it = initializedPlugins.rbegin();
+       it != initializedPlugins.rend(); ++it) {
+    (*it)->unload();
+  }
+}
+
+// -------------------
+
+namespace {
+
+void PluginInitializer::initializePlugins(PluginSystem::LoadedPlugins& uninitializedPlugins,
+                       PluginSystem::LoadedPlugins& initializedPlugins)
+{
+  addGraphNodes(uninitializedPlugins);
+  addGraphEdges(uninitializedPlugins);
+  assertNoCycles();
+  initializePlugins(initializedPlugins);
+}
+
+void PluginInitializer::addGraphNodes(PluginSystem::LoadedPlugins& plugins)
+{
   for (auto& plugin: plugins) {
     PluginHandle::Providers handleProviders;
 
     SubmitProvider submitProvider = [&handleProviders](auto key, auto& provider) {
-      handleProviders.emplace_back(key, provider);
-    };
+      handleProviders.emplace_back(key, provider);};
+
     plugin->submitProviders(submitProvider);
 
     PluginHandle::Consumers handleConsumers;
     SubmitConsumer submitConsumer = [&handleConsumers](auto key, const auto& consumer) {
-      handleConsumers.emplace_back(key, consumer);
-    };
+      handleConsumers.emplace_back(key, consumer);};
+
     plugin->submitConsumers(submitConsumer);
 
     for (const auto& provider: handleProviders) {
       providerOrigins.emplace(std::get<0>(provider), plugin->getName());
     }
-
     graph.addNode(PluginHandle{plugin, handleProviders, handleConsumers});
   }
+}
 
-  // adding edges
+void PluginInitializer::addGraphEdges(PluginSystem::LoadedPlugins& plugins)
+{
   for (auto& plugin: plugins) {
     auto& handle = graph.getNode(plugin->getName());
     for (const auto& [key, consumer]: handle.consumers) {
@@ -101,7 +154,10 @@ void PluginSystem::initialize()
       graph.addEdge(plugin->getName(), providerOriginIt->second);
     }
   }
+}
 
+void PluginInitializer::assertNoCycles()
+{
   auto cycles = graph.findCycles();
 
   if (!cycles.empty()) {
@@ -117,8 +173,10 @@ void PluginSystem::initialize()
     }
     throw CircularDependencyException(message.str());
   }
+}
 
-  // init
+void PluginInitializer::initializePlugins(PluginSystem::LoadedPlugins& orderedPlugins)
+{
   auto sortedPlugins = graph.topologicalSort();
   for (auto& handle: sortedPlugins) {
     auto& plugin = handle.plugin;
@@ -135,28 +193,6 @@ void PluginSystem::initialize()
 
     orderedPlugins.emplace_back(std::move(plugin));
   }
-
 }
 
-void PluginSystem::start()
-{
-  for (auto& plugin: orderedPlugins) {
-    plugin->start();
-  }
-}
-
-void PluginSystem::stop()
-{
-  for (auto it = orderedPlugins.rbegin();
-       it != orderedPlugins.rend(); ++it) {
-    (*it)->stop();
-  }
-}
-
-void PluginSystem::unload()
-{
-  for (auto it = orderedPlugins.rbegin();
-       it != orderedPlugins.rend(); ++it) {
-    (*it)->unload();
-  }
-}
+} // namespace

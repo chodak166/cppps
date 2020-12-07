@@ -26,8 +26,8 @@ public:
 
 private:
   ICliPtr cli {nullptr};
-  LoadedPlugins plugins;
-  LoadedPlugins orderedPlugins;
+  LoadedPlugins uninitializedPlugins;
+  LoadedPlugins initializedPlugins;
 };
 
 } // namespace cppps
