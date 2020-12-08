@@ -17,8 +17,8 @@ namespace cppps {
  * The PluginSystem instance will take ownership of given
  * IPlugin objects and go throug all their life-cycle stages.
  *
- * It is guaranteed that for plugin P:
- * a) every P::initialize() method will be called after every
+ * It is guaranteed that:
+ * a) the IPlugin::initialize() method will be called after every
  * consumer of P gets his resources provided by other plugins;
  * b) every provider of P will be called after successfull
  * initialization;
