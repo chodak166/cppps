@@ -12,26 +12,25 @@
 
 namespace cppps {
 
+class TypeMismatchException: public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
+/**
+ * @brief A simple std::any wrapper that
+ * introduces custom exception and "as" method.
+ *
+ */
 class Resource
 {
 public:
   Resource() = delete;
 
   template<class T>
-  Resource(T&& value)
-  {
-    object = std::move(value);
-  }
+  Resource(T&& value);
 
   template<class T>
-  T as() const
-  {
-    if (typeid(T) != object.type()) {
-      throw std::runtime_error(std::string("Resource conversion not allowed: ")
-                               + object.type().name() + " to " + typeid(T).name());
-    }
-    return std::any_cast<T>(object);
-  }
+  T as() const;
 
 private:
   std::any object;
@@ -39,6 +38,24 @@ private:
 
 using ResourceProvider = std::function<Resource()>;
 using ResourceConsumer = std::function<void(const Resource&)>;
+
+// ----------
+
+template<class T>
+Resource::Resource(T&& value)
+{
+  object = std::move(value);
+}
+
+template<class T>
+T Resource::as() const
+{
+  if (typeid(T) != object.type()) {
+    throw TypeMismatchException(std::string("Resource conversion not allowed: ")
+                             + object.type().name() + " to " + typeid(T).name());
+  }
+  return std::any_cast<T>(object);
+}
 
 } // namespace cppps
 

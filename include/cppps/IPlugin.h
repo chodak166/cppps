@@ -20,6 +20,13 @@ using IPluginDPtr = std::unique_ptr<IPlugin, PluginDeleter>;
 using SubmitProvider = std::function<void(std::string_view, const ResourceProvider&)>;
 using SubmitConsumer = std::function<void(std::string_view, const ResourceConsumer&)>;
 
+/**
+ * @brief The Plugin interface class.
+ *
+ * This is the interface required to be implemented
+ * by all cppps plugins.
+ *
+ */
 class IPlugin
 {
 public:

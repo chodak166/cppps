@@ -173,6 +173,18 @@ TEST_CASE_METHOD(test::Fixture, "Testing plugins initialization", "[ps_init]")
     REQUIRE_THROWS_AS(pluginSystem.initialize(), CircularDependencyException);
   }
 
+  SECTION("When a consumer misuses the resource type, then an exception is thrown")
+  {
+    When(Method(pluginB, submitConsumers)).Do([](const SubmitConsumer& submit) {
+      auto consumer = [](const Resource& obj) {
+        obj.as<int>();
+      };
+      submit(test::PRODUCT_A_KEY, consumer);
+    });
+
+    REQUIRE_THROWS_AS(pluginSystem.initialize(), TypeMismatchException);
+  }
+
 }
 
 
