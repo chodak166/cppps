@@ -19,8 +19,8 @@ namespace cppps {
  *
  * It is guaranteed that:
  * a) the IPlugin::initialize() method will be called after every
- * consumer of P gets his resources provided by other plugins;
- * b) every provider of P will be called after successfull
+ * consumer of the plugin gets his resources provided by other plugins;
+ * b) every provider will be called after its plugin successfull
  * initialization;
  * c) an exception is thrown when there is at least one
  * unresolved dependency (i.e. consumer with no matched provider);

@@ -170,8 +170,8 @@ TEST_CASE("Testing graph topological sorting", "[graph_ts]")
     REQUIRE(indexMap[test::NODE_C] < indexMap[test::NODE_B]);
   }
 
-  SECTION("When the topological sort is performed, "
-          "then the returned objects have initial data preserved")
+  SECTION("When the topological sort is performed on a connected graph, "
+          "then every tail has index lower than its head regardless of insertion order")
   {
     graph.addNode(test::NODE_C);
     graph.addNode(test::NODE_B);
@@ -187,8 +187,8 @@ TEST_CASE("Testing graph topological sorting", "[graph_ts]")
     REQUIRE(indexMap[test::NODE_C] < indexMap[test::NODE_B]);
   }
 
-  SECTION("When the topological sort is performed on a connected graph, "
-          "then every tail has index lower than its head regardless of insertion order")
+  SECTION("When the topological sort is performed, "
+          "then the returned objects have initial data preserved")
   {
     graph.addNode(test::NODE_A);
     graph.addNode(test::NODE_B);
@@ -198,6 +198,7 @@ TEST_CASE("Testing graph topological sorting", "[graph_ts]")
     REQUIRE(sorted.front() == test::NODE_A);
     REQUIRE(sorted.back() == test::NODE_B);
   }
+
 
   SECTION("When the topological sort is performed on a single node graph, "
           "then the only node is returned")
@@ -457,6 +458,26 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
     REQUIRE(it == cycle2.end());
   }
 
+//TODO: not supported yet:
+//  SECTION("When the graph contains multiple cycles with shared nodes, "
+//          "then all cycles are found")
+//  {
+//    graph.addNode(test::NODE_A);
+//    graph.addNode(test::NODE_B);
+//    graph.addNode(test::NODE_C);
+//    graph.addNode(test::NODE_D);
+
+//    graph.addEdge(test::NODE_A, test::NODE_B);
+//    graph.addEdge(test::NODE_B, test::NODE_C);
+//    graph.addEdge(test::NODE_C, test::NODE_D);
+//    graph.addEdge(test::NODE_D, test::NODE_A);
+
+//    graph.addEdge(test::NODE_A, test::NODE_C);
+
+//    auto cycles = graph.findCycles();
+
+//    REQUIRE(cycles.size() == 2);
+//  }
 
 }
 
