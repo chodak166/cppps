@@ -27,12 +27,15 @@ struct PathEntry
   std::string version;
 };
 
-using Directories = std::list<std::string>;
-using Extensions = std::list<std::string>;
 using PathMap = std::map<std::string /*name*/, PathEntry>;
 
-void appendDirectoriesScanResults(Directories& dirs, const Extensions& extensions, PathMap& paths);
-PathEntry matchPath(const std::filesystem::path& path, const Extensions& extensions);
+void appendDirectoriesScanResults(PluginCollector::Directories& dirs,
+                                  const PluginCollector::Extensions& extensions,
+                                  PathMap& paths);
+
+PathEntry matchPath(const std::filesystem::path& path,
+                    const PluginCollector::Extensions& extensions);
+
 std::vector<std::string> split(std::string_view text);
 
 }
@@ -45,6 +48,11 @@ void PluginCollector::addPluginExtension(std::string_view extension)
 void PluginCollector::addDirectory(std::string_view dir)
 {
   dirs.emplace_back(dir);
+}
+
+void PluginCollector::addDirectories(const Directories& dirs)
+{
+  this->dirs.insert(this->dirs.end(), dirs.begin(), dirs.end());
 }
 
 void PluginCollector::enablePathEnvVariable(std::string_view name)
@@ -103,7 +111,9 @@ void PluginCollector::addEnvVariableDirectories()
 
 namespace {
 
-void appendDirectoriesScanResults(Directories& dirs, const Extensions& extensions, PathMap& paths)
+void appendDirectoriesScanResults(PluginCollector::Directories& dirs,
+                                  const PluginCollector::Extensions& extensions,
+                                  PathMap& paths)
 {
   for (const auto& dir: dirs) {
     std::filesystem::directory_iterator dirIt(dir);
@@ -125,7 +135,8 @@ void appendDirectoriesScanResults(Directories& dirs, const Extensions& extension
   }
 }
 
-PathEntry matchPath(const std::filesystem::path& path, const Extensions& extensions)
+PathEntry matchPath(const std::filesystem::path& path,
+                    const PluginCollector::Extensions& extensions)
 {
   PathEntry entry;
   for (const auto& extension: extensions) {

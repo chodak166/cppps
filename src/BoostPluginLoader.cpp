@@ -49,7 +49,8 @@ IPluginDPtr BoostPluginLoader::load(std::string_view path)
 
   try {
     library = std::make_shared<boost::dll::shared_library>(path.data(),
-                                                           boost::dll::load_mode::append_decorations);
+                                                           boost::dll::load_mode::append_decorations
+                                                           | boost::dll::load_mode::rtld_global);
     makePlugin = library->get_alias<cppps::IPluginUPtr()>("make_plugin");
   }
   catch (boost::system::system_error& e) {

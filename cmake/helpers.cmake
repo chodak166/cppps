@@ -45,8 +45,9 @@ function(add_test_executable)
     target_link_libraries(${TEST_EXEC_TARGET} PRIVATE ${TEST_EXEC_LIBS})
   endif()
 
-  target_compile_options(${TEST_EXEC_TARGET} PRIVATE "-O0")
+  target_compile_options(${TEST_EXEC_TARGET} PRIVATE "-O0" )
   add_test(NAME ${TEST_EXEC_TARGET} COMMAND ${TEST_EXEC_TARGET})
+
 
 endfunction()
 

@@ -24,7 +24,7 @@ namespace {
 
 constexpr const char* getPluginExtension();
 
-const auto PLUGIN_DIR = boost::dll::program_location().parent_path().string() + "/plugins";
+const auto PLUGIN_DIR = boost::dll::program_location().parent_path().string() + "/dummy_plugins";
 
 constexpr auto PLUGIN_A_NAME ="plugin_a";
 const auto PLUGIN_A_PATH = PLUGIN_DIR + "/libplugin_a." + getPluginExtension();

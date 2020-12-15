@@ -18,23 +18,23 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package(Boost REQUIRED COMPONENTS filesystem system)
 
-add_executable(${PROJECT_NAME}
-  main.cpp
-  )
+#add_executable(${PROJECT_NAME}
+#  main.cpp
+#  )
 
-target_include_directories(${PROJECT_NAME}
-  PRIVATE
-  include
-  )
+#target_include_directories(${PROJECT_NAME}
+#  PRIVATE
+#  include
+#  )
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  CXX_VISIBILITY_PRESET hidden)
+#set_target_properties(${PROJECT_NAME} PROPERTIES
+#  CXX_VISIBILITY_PRESET hidden)
 
 
-target_link_libraries(${PROJECT_NAME}
-  ${Boost_LIBRARIES}
-  dl
-  )
+#target_link_libraries(${PROJECT_NAME}
+#  ${Boost_LIBRARIES}
+#  dl
+#  )
 
 enable_testing(ON)
 

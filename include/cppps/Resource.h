@@ -10,9 +10,15 @@
 #include <functional>
 #include <any>
 
+#include <nixlab/stdeasylog>
+
 namespace cppps {
 
 class TypeMismatchException: public std::runtime_error {
+  using runtime_error::runtime_error;
+};
+
+class BadCastException: public std::runtime_error {
   using runtime_error::runtime_error;
 };
 
@@ -54,7 +60,14 @@ T Resource::as() const
     throw TypeMismatchException(std::string("Resource conversion not allowed: ")
                              + object.type().name() + " to " + typeid(T).name());
   }
-  return std::any_cast<T>(object);
+  try {
+    return std::any_cast<T>(object);
+  }
+  catch(std::bad_any_cast& e) {
+    throw BadCastException(std::string("Resource type conversion failed: ")
+                           + object.type().name() + " to " + typeid(T).name()
+                           + "; ensure that RTLD_GLOBAL flag is enabled");
+  }
 }
 
 } // namespace cppps

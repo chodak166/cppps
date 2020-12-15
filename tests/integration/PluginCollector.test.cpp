@@ -106,8 +106,7 @@ TEST_CASE("Testing plugin collector", "[plugin_collector]")
 
   SECTION("When multiple directories were added, then all files within that directories ending with given extension are collected")
   {
-    collector.addDirectory(test::PLUGIN_DIR_B);
-    collector.addDirectory(test::PLUGIN_DIR_C);
+    collector.addDirectories({test::PLUGIN_DIR_B, test::PLUGIN_DIR_C});
     auto files = collector.collectPlugins();
     files.sort();
 

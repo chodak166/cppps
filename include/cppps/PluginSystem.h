@@ -34,6 +34,7 @@ public:
   using LoadedPlugins = std::list<IPluginDPtr>;
 
   PluginSystem(const ICliPtr& app);
+  void addPlugin(IPluginDPtr&& plugin);
   void mergePlugins(LoadedPlugins& plugins);
   void prepare();
   void initialize();

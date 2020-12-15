@@ -62,6 +62,11 @@ PluginSystem::PluginSystem(const ICliPtr& app)
   // empty
 }
 
+void PluginSystem::addPlugin(IPluginDPtr&& plugin)
+{
+  uninitializedPlugins.push_back(std::move(plugin));
+}
+
 void PluginSystem::mergePlugins(LoadedPlugins& plugins)
 {
   this->uninitializedPlugins.merge(plugins);
@@ -101,7 +106,9 @@ void PluginSystem::unload()
   for (auto it = initializedPlugins.rbegin();
        it != initializedPlugins.rend(); ++it) {
     (*it)->unload();
+    (*it) = nullptr; // preserve destroying order
   }
+  initializedPlugins.clear();
 }
 
 // -------------------

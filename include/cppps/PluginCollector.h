@@ -16,9 +16,13 @@ class PluginCollector
 public:
 
   using Paths = std::list<std::string>;
+  using Directories = std::list<std::string>;
+  using Extensions = std::list<std::string>;
+
   virtual ~PluginCollector() = default;
   void addPluginExtension(std::string_view extension);
   void addDirectory(std::string_view dir);
+  void addDirectories(const Directories& dirs);
   void enablePathEnvVariable(std::string_view name);
   void enableFileEnvVariable(std::string_view name);
   Paths collectPlugins();
