@@ -81,16 +81,20 @@ PluginCollector::Paths PluginCollector::collectPlugins()
 void PluginCollector::appendEnvVariableFiles(Paths& paths)
 {
   auto envValue = std::getenv(fileEnvVariableName.c_str());
-  auto files = split(envValue);
-  paths.insert(paths.end(), files.begin(), files.end());
+  if (envValue) {
+    auto files = split(envValue);
+    paths.insert(paths.end(), files.begin(), files.end());
+  }
 }
 
 void PluginCollector::addEnvVariableDirectories()
 {
   auto envValue = std::getenv(pathEnvVariableName.c_str());
-  auto dirs = split(envValue);
-  for (const auto& dir: dirs) {
-    addDirectory(dir);
+  if (envValue) {
+    auto dirs = split(envValue);
+    for (const auto& dir: dirs) {
+      addDirectory(dir);
+    }
   }
 }
 

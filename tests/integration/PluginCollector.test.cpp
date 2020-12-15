@@ -144,6 +144,13 @@ TEST_CASE("Testing plugin collector", "[plugin_collector]")
     REQUIRE(it == files.end());
   }
 
+  SECTION("When extra directory environment variable is empty, then no exception is thrown")
+  {
+    collector.enablePathEnvVariable(test::EXTRA_PATH_ENV_NAME);
+    REQUIRE_NOTHROW(collector.collectPlugins());
+  }
+
+
   SECTION("When extra directory environment variable was set, then matched files from given directory are collected")
   {
     collector.enablePathEnvVariable(test::EXTRA_PATH_ENV_NAME);
@@ -257,8 +264,13 @@ void writeRandomFile(std::string_view filename, int bytes = 1024)
 
 void setEnvVariable(const std::string& var, const std::string& value)
 {
-  auto envExpression = strdup(std::string(var + "=" + value).c_str());
+#ifdef __unix
+  setenv(var.c_str(), value.c_str(), 1);
+#else
+  auto str = var + "=" + value;
+  auto envExpression = strdup(str.c_str());
   putenv(envExpression);
+#endif
 }
 
 void createTestFiles()
