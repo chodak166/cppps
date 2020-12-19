@@ -10,8 +10,6 @@
 #include <functional>
 #include <any>
 
-#include <nixlab/stdeasylog>
-
 namespace cppps {
 
 class TypeMismatchException: public std::runtime_error {

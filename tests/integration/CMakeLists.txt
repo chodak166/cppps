@@ -1,3 +1,9 @@
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+
+find_package(Boost REQUIRED COMPONENTS filesystem system)
+
 include_directories(
   ${PROJECT_ROOT}/include
 )
@@ -10,9 +16,9 @@ add_subdirectory(dummy_plugins)
 add_subdirectory(app_plugins)
 
 set(COMMON_LIBS
+    stdc++fs
     Catch2::Catch2
   )
-
 
 add_test_executable(TARGET plugin-collector-test
   SOURCES

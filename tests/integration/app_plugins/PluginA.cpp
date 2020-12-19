@@ -19,7 +19,7 @@ public:
   };
   void initialize() override
   {
-    std::cout << "Acquired product value: " << product->getValue() << std::endl;
+    //std::cout << "Acquired product value: " << product->getValue() << std::endl;
   }
   void start() override {}
   void stop() override {}
