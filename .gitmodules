@@ -6,3 +6,8 @@
 	path = submodules/fakeit
 	url = https://github.com/chodak166/FakeIt.git
 	shallow = true
+[submodule "submodules/cli11"]
+	path = submodules/cli11
+	url = https://github.com/CLIUtils/CLI11.git
+	shallow = true
+

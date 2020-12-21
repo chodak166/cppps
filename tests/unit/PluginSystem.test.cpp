@@ -117,19 +117,19 @@ struct Fixture
 
 TEST_CASE_METHOD(test::Fixture, "Testing plugins initialization", "[ps_init]")
 {
-  PluginSystem pluginSystem(cliPtr);
+  PluginSystem pluginSystem;
   pluginSystem.mergePlugins(plugins);
 
   SECTION("When the preparation stage is done, then all plugins should be prepared in the order they were added")
   {
-    pluginSystem.prepare();
+    pluginSystem.prepare(cliPtr);
     REQUIRE(processedPlugins.at(0) == test::PLUGIN_B_NAME + test::PREPARE_TAG);
     REQUIRE(processedPlugins.at(1) == test::PLUGIN_A_NAME + test::PREPARE_TAG);
   }
 
   SECTION("When the preparation stage is done, then all the plugins should get access to the command line handle")
   {
-    pluginSystem.prepare();
+    pluginSystem.prepare(cliPtr);
     Verify(Method(pluginA, prepare).Using(cliPtr)).Once();
     Verify(Method(pluginB, prepare).Using(cliPtr)).Once();
   }
@@ -190,7 +190,7 @@ TEST_CASE_METHOD(test::Fixture, "Testing plugins initialization", "[ps_init]")
 
 TEST_CASE_METHOD(test::Fixture, "Testing plugin life cycle", "[ps_cycle]")
 {
-  PluginSystem pluginSystem(cliPtr);
+  PluginSystem pluginSystem;
   pluginSystem.mergePlugins(plugins);
   pluginSystem.initialize();
   processedPlugins.clear();

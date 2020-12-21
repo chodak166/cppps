@@ -56,8 +56,7 @@ private:
 } // namespace
 
 
-PluginSystem::PluginSystem(const ICliPtr& app)
-  : cli {app}
+PluginSystem::PluginSystem()
 {
   // empty
 }
@@ -72,7 +71,7 @@ void PluginSystem::mergePlugins(LoadedPlugins& plugins)
   this->uninitializedPlugins.merge(plugins);
 }
 
-void PluginSystem::prepare()
+void PluginSystem::prepare(const ICliPtr& cli)
 {
   for (auto& plugin: uninitializedPlugins) {
     plugin->prepare(cli);

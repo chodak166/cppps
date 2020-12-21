@@ -3,137 +3,68 @@
 // See accompanying file LICENSE.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
+#include "cppps/Application.h"
+#include "cppps/Cli.h"
 
-#include "cppps/PluginCollector.h"
-#include "cppps/IPlugin.h"
-#include "cppps/exceptions.h"
-
-#include "cppps/BoostPluginLoader.h"
-#include "cppps/PluginCollector.h"
-#include "cppps/PluginSystem.h"
-
+#include <iostream>
 #include <filesystem>
 #include <catch2/catch.hpp>
 
 #include "app_plugins/ITestProduct.h"
 
-#ifdef _WIN32
-#include <windows.h>    //GetModuleFileNameW
-#else
-#include <limits.h>
-#include <unistd.h>     //readlink
-#endif
-
 using namespace cppps;
-
-class Application
-{
-public:
-
-  using Directories = std::list<std::string>;
-
-  Application(): pluginSystem{nullptr} {}
-
-  virtual ~Application() = default;
-
-  void setPluginDirectories(const Directories& dirs)
-  {
-    pluginDirs = dirs;
-  }
-
-  static std::string getAppDirPath()
-  {
-    std::filesystem::path execPath;
-#ifdef _WIN32
-    wchar_t path[MAX_PATH] = { 0 };
-    GetModuleFileNameW(NULL, path, MAX_PATH);
-    execPath = path;
-#else
-    char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    execPath = std::string(result, (count > 0) ? count : 0);
-#endif
-    return execPath.parent_path().string();
-  }
-
-  void preloadPlugin(IPluginUPtr&& plugin)
-  {
-    IPluginDPtr preloadedPlugin(plugin.get(), [](auto* obj){delete obj;});
-    plugin.release();
-    preloadedPlugins.push_back(std::move(preloadedPlugin));
-  }
-
-  int exec()
-  {
-    PluginCollector collector;
-    collector.addDirectories(pluginDirs);
-
-#ifdef _WIN32
-    collector.addPluginExtension("dll");
-#else
-    collector.addPluginExtension("so");
-#endif
-
-
-    for (auto& preloadedPlugin: preloadedPlugins) {
-      pluginSystem.addPlugin(std::move(preloadedPlugin));
-    }
-    preloadedPlugins.clear();
-
-    auto pluginPaths = collector.collectPlugins();
-    BoostPluginLoader loader;
-    for (const auto& pluginPath: pluginPaths) {
-      auto plugin = loader.load(pluginPath);
-      pluginSystem.addPlugin(std::move(plugin));
-    }
-
-    pluginSystem.prepare();
-    pluginSystem.initialize();
-    pluginSystem.start();
-
-    return EXIT_SUCCESS;
-  }
-
-  void quit()
-  {
-    pluginSystem.stop();
-    pluginSystem.unload();
-  }
-
-private:
-  Directories pluginDirs;
-  PluginSystem pluginSystem;
-  PluginSystem::LoadedPlugins preloadedPlugins;
-};
-
 
 namespace test {
 namespace {
+
+constexpr auto PARAM_VALUE = "test product value";
+
+const AppInfo info {
+  "ApplicationTest",
+  "Test application",
+  "ApplicationTest v1.2.3\n"
+};
 
 class SpyPlugin: public IPlugin
 {
 public:
 
-  SpyPlugin(ITestProductPtr& product): product {product} {};
+  enum class State {NEW = 0, LOADED, PREPARED,
+                    INITIALIZED, STARTED, STOPPED, UNLOADED};
+
+  struct Values
+  {
+    ITestProductPtr product;
+    std::string param;
+    State state {State::NEW};
+  };
+
+  SpyPlugin(Values& values)
+    : values{values}
+  {
+    values.state = State::LOADED;
+  }
 
   std::string getName() const override {return "spy_plugin";}
   std::string getVersionString() const override {return "0.0.0";}
-  void prepare(const ICliPtr& app) override {};
-  void submitProviders(const SubmitProvider& submitProvider) override {};
+  void prepare(const ICliPtr& app) override
+  {
+    app->addOption("-p,--param", values.param, "Test product value");
+    values.state = State::PREPARED;
+  }
+  void submitProviders(const SubmitProvider& /*submitProvider*/) override {};
   void submitConsumers(const SubmitConsumer& submitConsumer) override {
     submitConsumer("product_b", [this](const Resource& resource){
-      product = resource.as<ITestProductPtr>();
+      values.product = resource.as<ITestProductPtr>();
     });
-  };
-  void initialize() override {};
-  void start() override {};
-  void stop() override {};
-  void unload() override {
-    //product = nullptr;
-  };
+  }
+  void initialize() override {values.state = State::INITIALIZED;}
+  void start() override {values.state = State::STARTED;}
+  void stop() override {values.state = State::STOPPED;}
+  void unload() override {values.state = State::UNLOADED;}
 
 private:
-  ITestProductPtr product;
+  Values& values;
 };
 
 } // namespace
@@ -142,7 +73,7 @@ private:
 
 TEST_CASE("Testing application execution", "[app_exec]")
 {
-  Application app;
+  Application app(test::info);
   app.setPluginDirectories({Application::getAppDirPath() + "/app_plugins"});
 
   SECTION("When the application is executed with working plugins, then no exception is thrown")
@@ -150,24 +81,59 @@ TEST_CASE("Testing application execution", "[app_exec]")
     REQUIRE_NOTHROW(app.exec());
   }
 
-  SECTION("When a plugin is loaded statically, then it has access to dynamic resources")
+  SECTION("When a plugin is loaded statically, then it has access to the dynamic resources")
   {
-    ITestProductPtr product = nullptr;
-    app.preloadPlugin(std::make_unique<test::SpyPlugin>(product));
+    test::SpyPlugin::Values values;
+    app.preloadPlugin(std::make_unique<test::SpyPlugin>(values));
     app.exec();
 
-   // REQUIRE(product != nullptr);
+    CHECK(values.product != nullptr);
   }
-
 
   app.quit();
 }
 
+TEST_CASE("Testing application CLI", "[app_cli]")
+{
+  Application app(test::info);
+  app.setPluginDirectories({Application::getAppDirPath() + "/app_plugins"});
 
-namespace test {
-namespace {
+  SECTION("When the help page is requested, then the plugins are not initialized")
+  {
+    std::vector<char*> args = {const_cast<char*>("app_name"),
+                               const_cast<char*>("-h")};
 
+    test::SpyPlugin::Values values;
+    app.preloadPlugin(std::make_unique<test::SpyPlugin>(values));
+    app.exec(args.size(), args.data());
 
-} // namespace
-} // namespace test
+    CHECK(values.state == test::SpyPlugin::State::PREPARED);
+  }
 
+  SECTION("When the version page is requested, then the plugins are not initialized")
+  {
+    std::vector<char*> args = {const_cast<char*>("app_name"),
+                               const_cast<char*>("-v")};
+
+    test::SpyPlugin::Values values;
+    app.preloadPlugin(std::make_unique<test::SpyPlugin>(values));
+    app.exec(args.size(), args.data());
+
+    CHECK(values.state == test::SpyPlugin::State::PREPARED);
+  }
+
+  SECTION("When the application executes, then all arugments can be parsed by the loaded plugins")
+  {
+    std::vector<char*> args = {const_cast<char*>("app_name"),
+                               const_cast<char*>("-p"),
+                               const_cast<char*>(test::PARAM_VALUE)};
+
+    test::SpyPlugin::Values values;
+    app.preloadPlugin(std::make_unique<test::SpyPlugin>(values));
+    app.exec(args.size(), args.data());
+
+    CHECK(values.param == test::PARAM_VALUE);
+  }
+
+  app.quit();
+}

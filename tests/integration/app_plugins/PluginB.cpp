@@ -1,5 +1,5 @@
 #include "ITestProduct.h"
-#include <cppps/IPlugin.h>
+#include "cppps/IPlugin.h"
 #include <boost/dll/alias.hpp>
 
 using namespace cppps;
@@ -9,7 +9,7 @@ class ProductB: public ITestProduct
 public:
   std::string getValue() const override
   {
-    return "product_b_test_value";
+    return "product_b_default_value";
   }
 };
 

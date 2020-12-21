@@ -33,17 +33,16 @@ class PluginSystem
 public:
   using LoadedPlugins = std::list<IPluginDPtr>;
 
-  PluginSystem(const ICliPtr& app);
+  PluginSystem();
   void addPlugin(IPluginDPtr&& plugin);
   void mergePlugins(LoadedPlugins& plugins);
-  void prepare();
+  void prepare(const ICliPtr& cli);
   void initialize();
   void start();
   void stop();
   void unload();
 
 private:
-  ICliPtr cli {nullptr};
   LoadedPlugins uninitializedPlugins;
   LoadedPlugins initializedPlugins;
 };

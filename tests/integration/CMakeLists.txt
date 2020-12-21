@@ -12,12 +12,17 @@ if (NOT TARGET Catch2)
   add_subdirectory(${PROJECT_ROOT}/submodules/catch2 catch2)
 endif()
 
+if (NOT TARGET CLI11)
+  add_subdirectory(${PROJECT_ROOT}/submodules/cli11 cli11)
+endif()
+
 add_subdirectory(dummy_plugins)
 add_subdirectory(app_plugins)
 
 set(COMMON_LIBS
     stdc++fs
     Catch2::Catch2
+    CLI11::CLI11
   )
 
 add_test_executable(TARGET plugin-collector-test
@@ -44,6 +49,8 @@ add_test_executable(TARGET plugin-loader-test
 add_test_executable(TARGET application-test
   SOURCES
   Application.test.cpp
+  ${PROJECT_ROOT}/src/Application.cpp
+  ${PROJECT_ROOT}/src/Cli.cpp
   ${PROJECT_ROOT}/src/BoostPluginLoader.cpp
   ${PROJECT_ROOT}/src/PluginCollector.cpp
   ${PROJECT_ROOT}/src/PluginSystem.cpp

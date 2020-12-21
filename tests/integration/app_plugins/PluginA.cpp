@@ -1,6 +1,7 @@
 #include "ITestProduct.h"
-#include <cppps/IPlugin.h>
+#include "cppps/IPlugin.h"
 #include <boost/dll/alias.hpp>
+#include <iostream>
 
 using namespace cppps;
 
@@ -19,7 +20,7 @@ public:
   };
   void initialize() override
   {
-    //std::cout << "Acquired product value: " << product->getValue() << std::endl;
+    std::cout << "Acquired product value: " << product->getValue() << std::endl;
   }
   void start() override {}
   void stop() override {}
