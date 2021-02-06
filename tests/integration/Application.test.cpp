@@ -47,9 +47,9 @@ public:
 
   std::string getName() const override {return "spy_plugin";}
   std::string getVersionString() const override {return "0.0.0";}
-  void prepare(const ICliPtr& app) override
+  void prepare(const ICliPtr& cli, IApplication& /*app*/) override
   {
-    app->addOption("-p,--param", values.param, "Test product value");
+    cli->addOption("-p,--param", values.param, "Test product value");
     values.state = State::PREPARED;
   }
   void submitProviders(const SubmitProvider& /*submitProvider*/) override {};
@@ -66,6 +66,29 @@ public:
 private:
   Values& values;
 };
+
+
+class SpyPluginWithLoop: public SpyPlugin
+{
+public:
+  using SpyPlugin::SpyPlugin;
+  void prepare(const ICliPtr& cli, IApplication& app) override
+  {
+    SpyPlugin::prepare(cli, app);
+    app.setMainLoop([this](){
+      ++mainLoopExecutions;
+      return 0;
+    });
+
+    if (doubleLoop) {
+      app.setMainLoop([](){return 0;});
+    }
+  }
+
+  bool doubleLoop {false};
+  int mainLoopExecutions {0};
+};
+
 
 } // namespace
 } // namespace test
@@ -89,6 +112,29 @@ TEST_CASE("Testing application execution", "[app_exec]")
 
     CHECK(values.product != nullptr);
   }
+
+
+  SECTION("When the application main loop is set by plugin, then the main loop is executed once")
+  {
+    test::SpyPlugin::Values values;
+    auto plugin = std::make_unique<test::SpyPluginWithLoop>(values);
+    auto& mainLoopExecs = plugin->mainLoopExecutions;
+    app.preloadPlugin(std::move(plugin));
+    app.exec();
+    REQUIRE(mainLoopExecs == 1);
+  }
+
+
+  SECTION("When the application main loop is set twice, then an exception is thrown")
+  {
+    test::SpyPlugin::Values values;
+    auto plugin = std::make_unique<test::SpyPluginWithLoop>(values);
+    plugin->doubleLoop = true;
+    app.preloadPlugin(std::move(plugin));
+
+    REQUIRE_THROWS(app.exec());
+  }
+
 
   app.quit();
 }

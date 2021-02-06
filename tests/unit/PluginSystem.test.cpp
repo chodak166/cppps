@@ -5,6 +5,7 @@
 
 #include "cppps/ICli.h"
 #include "cppps/IPlugin.h"
+#include "cppps/IApplication.h"
 #include "cppps/exceptions.h"
 #include "cppps/PluginSystem.h"
 #include "cppps/Resource.h"
@@ -52,6 +53,7 @@ struct Fixture
   fakeit::Mock<IPlugin> pluginA;
   fakeit::Mock<IPlugin> pluginB;
   fakeit::Mock<IPlugin> pluginC;
+  fakeit::Mock<IApplication> app;
 
   ICliPtr cliPtr = cli.getFakePtr();
 
@@ -76,7 +78,7 @@ struct Fixture
   void setupLifecycleMethods(Mock<IPlugin>& plugin, std::string_view name)
   {
     When(Method(plugin, getName)).AlwaysDo([name](){return name.data();});
-    When(Method(plugin, prepare)).Do([this, name](auto){
+    When(Method(plugin, prepare)).Do([this, name](auto, auto&){
       processedPlugins.push_back(name.data() + test::PREPARE_TAG);});
     When(Method(plugin, initialize)).Do([this, name](){
       processedPlugins.push_back(name.data() + test::INIT_TAG);});
@@ -122,16 +124,16 @@ TEST_CASE_METHOD(test::Fixture, "Testing plugins initialization", "[ps_init]")
 
   SECTION("When the preparation stage is done, then all plugins should be prepared in the order they were added")
   {
-    pluginSystem.prepare(cliPtr);
+    pluginSystem.prepare(cliPtr, app());
     REQUIRE(processedPlugins.at(0) == test::PLUGIN_B_NAME + test::PREPARE_TAG);
     REQUIRE(processedPlugins.at(1) == test::PLUGIN_A_NAME + test::PREPARE_TAG);
   }
 
   SECTION("When the preparation stage is done, then all the plugins should get access to the command line handle")
   {
-    pluginSystem.prepare(cliPtr);
-    Verify(Method(pluginA, prepare).Using(cliPtr)).Once();
-    Verify(Method(pluginB, prepare).Using(cliPtr)).Once();
+    pluginSystem.prepare(cliPtr, app());
+    Verify(Method(pluginA, prepare).Using(cliPtr, fakeit::_)).Once();
+    Verify(Method(pluginB, prepare).Using(cliPtr, fakeit::_)).Once();
   }
 
   SECTION("When the initialization stage is done, then all the plugins should be initialized in the dependency order")

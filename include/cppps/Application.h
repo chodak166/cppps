@@ -6,12 +6,13 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
+#include "cppps/IApplication.h"
 #include "cppps/AppInfo.h"
 #include "cppps/PluginSystem.h"
 
 namespace cppps {
 
-class Application
+class Application: public IApplication
 {
 public:
   using Directories = std::list<std::string>;
@@ -24,13 +25,17 @@ public:
   void preloadPlugin(IPluginUPtr&& plugin);
   int exec(int argc, char** argv);
   int exec();
-  void quit();
+
+  // IApplication
+  void quit() override;
+  void setMainLoop(const MainLoop& loop) override;
 
 private:
   AppInfo appInfo;
   Directories pluginDirs;
   PluginSystem pluginSystem;
   PluginSystem::LoadedPlugins preloadedPlugins;
+  MainLoop mainLoop {nullptr};
 };
 
 

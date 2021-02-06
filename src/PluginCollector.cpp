@@ -116,6 +116,9 @@ void appendDirectoriesScanResults(PluginCollector::Directories& dirs,
                                   PathMap& paths)
 {
   for (const auto& dir: dirs) {
+    if (!std::filesystem::exists(dir)) {
+      continue;
+    }
     std::filesystem::directory_iterator dirIt(dir);
     for (const auto& path: dirIt) {
       auto pathEntry = matchPath(path, extensions);

@@ -19,7 +19,7 @@ public:
   // IPlugin interface
   std::string getName() const override {return name;}
   std::string getVersionString() const override {return version;}
-  void prepare(const cppps::ICliPtr&) override {};
+  void prepare(const cppps::ICliPtr&, cppps::IApplication&) override {};
   void submitProviders(const cppps::SubmitProvider&) override {};
   void submitConsumers(const cppps::SubmitConsumer&) override {};
   void initialize() override {}

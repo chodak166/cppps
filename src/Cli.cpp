@@ -51,7 +51,7 @@ void Cli::parse(int argc, char* argv[])
       cliApp.parse(argc, argv);
   } catch(const CLI::CallForHelp &e) {
     message = (e.get_exit_code() == VERSION_REQUEST_CODE)
-        ? appInfo.appVersionPage
+        ? appInfo.appVersionPage + '\n'
         : cliApp.help();
   }
 }

@@ -18,23 +18,32 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 
 find_package(Boost REQUIRED COMPONENTS filesystem system)
 
-#add_executable(${PROJECT_NAME}
-#  main.cpp
-#  )
+add_library(${PROJECT_NAME}
+  src/Application.cpp
+  src/BoostPluginLoader.cpp
+  src/Cli.cpp
+  src/PluginCollector.cpp
+  src/PluginSystem.cpp
+  )
 
-#target_include_directories(${PROJECT_NAME}
-#  PRIVATE
-#  include
-#  )
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+  include
+
+  PRIVATE
+  src
+  submodules/cli11/include
+  )
 
 #set_target_properties(${PROJECT_NAME} PROPERTIES
 #  CXX_VISIBILITY_PRESET hidden)
 
 
-#target_link_libraries(${PROJECT_NAME}
-#  ${Boost_LIBRARIES}
-#  dl
-#  )
+target_link_libraries(${PROJECT_NAME}
+  ${Boost_LIBRARIES}
+  dl
+  stdc++fs
+  )
 
 enable_testing(ON)
 
@@ -48,5 +57,3 @@ if (${CPPPS_INTEGRATION_TESTS_BUILD})
   add_subdirectory(tests/integration)
 endif()
 
-#add_subdirectory(plugins/plugin_a)
-#add_subdirectory(plugins/plugin_b)

@@ -31,16 +31,15 @@ void Application::setPluginDirectories(const Application::Directories& dirs)
 
 std::string Application::getAppDirPath()
 {
-  std::filesystem::path execPath;
 
 #ifdef __unix
   char result[PATH_MAX];
   ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-  execPath = std::string(result, (count > 0) ? count : 0);
+  std::filesystem::path execPath = std::string(result, (count > 0) ? count : 0);
 #else
   wchar_t path[MAX_PATH] = { 0 };
   GetModuleFileNameW(NULL, path, MAX_PATH);
-  execPath = path;
+  std::filesystem::path execPath = path;
 #endif
 
   return execPath.parent_path().string();
@@ -77,7 +76,7 @@ int Application::exec(int argc, char** argv)
   }
 
   auto cli = std::make_shared<Cli>(appInfo);
-  pluginSystem.prepare(cli);
+  pluginSystem.prepare(cli, *this);
 
   cli->parse(argc, argv);
   if (cli->hasMessage()) {
@@ -90,6 +89,10 @@ int Application::exec(int argc, char** argv)
 
   pluginSystem.initialize();
   pluginSystem.start();
+
+  if (mainLoop) {
+    return mainLoop();
+  }
 
   return EXIT_SUCCESS;
 }
@@ -104,5 +107,13 @@ void Application::quit()
 {
   pluginSystem.stop();
   pluginSystem.unload();
+}
+
+void Application::setMainLoop(const MainLoop& loop)
+{
+  if (mainLoop) {
+    throw std::runtime_error("Possible plugin conflict - main loop already set");
+  }
+  mainLoop = loop;
 }
 

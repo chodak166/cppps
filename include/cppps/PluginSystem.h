@@ -11,6 +11,8 @@
 
 namespace cppps {
 
+class IApplication;
+
 /**
  * @brief Plugin life-cycle controller class.
  *
@@ -36,7 +38,7 @@ public:
   PluginSystem();
   void addPlugin(IPluginDPtr&& plugin);
   void mergePlugins(LoadedPlugins& plugins);
-  void prepare(const ICliPtr& cli);
+  void prepare(const ICliPtr& cli, IApplication& app);
   void initialize();
   void start();
   void stop();

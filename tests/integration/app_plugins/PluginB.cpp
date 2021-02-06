@@ -20,7 +20,7 @@ class Plugin: public IPlugin
 public:
   std::string getName() const override {return PLUGIN_NAME;}
   std::string getVersionString() const override {return PLUGIN_VERSION;}
-  void prepare(const ICliPtr& /*app*/) override {};
+  void prepare(const ICliPtr& /*cli*/, IApplication& /*app*/) override {};
   void submitProviders(const SubmitProvider& submitProvider) override
   {
     submitProvider("product_b", [this](){

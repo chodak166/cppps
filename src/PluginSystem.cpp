@@ -71,10 +71,10 @@ void PluginSystem::mergePlugins(LoadedPlugins& plugins)
   this->uninitializedPlugins.merge(plugins);
 }
 
-void PluginSystem::prepare(const ICliPtr& cli)
+void PluginSystem::prepare(const ICliPtr& cli, IApplication& app)
 {
   for (auto& plugin: uninitializedPlugins) {
-    plugin->prepare(cli);
+    plugin->prepare(cli, app);
   }
 }
 
