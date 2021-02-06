@@ -13,6 +13,9 @@ add_library(${PROJECT_NAME} MODULE
   Plugin.cpp
   )
 
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  CXX_VISIBILITY_PRESET hidden)
+
 target_link_libraries(${PROJECT_NAME}
   cppps
   )
