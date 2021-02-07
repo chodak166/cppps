@@ -14,7 +14,7 @@ using ICliPtr = std::shared_ptr<ICli>;
 class IApplication;
 
 class IPlugin;
-using IPluginPtr = std::shared_ptr<IPlugin>;
+//using IPluginPtr = std::shared_ptr<IPlugin>;
 using IPluginUPtr = std::unique_ptr<IPlugin>;
 using PluginDeleter = std::function<void(cppps::IPlugin*)>;
 using IPluginDPtr = std::unique_ptr<IPlugin, PluginDeleter>;

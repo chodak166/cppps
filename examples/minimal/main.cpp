@@ -1,6 +1,7 @@
 #include "version.h"
 
 #include <cppps/Application.h>
+#include <cppps/Logging.h>
 
 int main(int argc, char *argv[])
 {

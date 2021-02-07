@@ -1,5 +1,7 @@
 #include "IProduct.h"
-#include "cppps/IPlugin.h"
+#include <cppps/IPlugin.h>
+#include <cppps/Logging.h>
+
 #include <boost/dll/alias.hpp>
 #include <iostream>
 
@@ -35,6 +37,7 @@ public:
   void submitConsumers(const SubmitConsumer& /*submitConsumer*/) override {};
   void initialize() override
   {
+    LOG(INFO) << "Creating product";
     product = std::make_shared<Product>();
   }
   void start() override {}

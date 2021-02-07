@@ -11,6 +11,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/minex_plugins)
 
 add_library(${PROJECT_NAME} MODULE
   Plugin.cpp
+#  /home/chodak/src/git/easyloggingpp/src/easylogging++.cc
   )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -19,6 +20,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_link_libraries(${PROJECT_NAME}
   cppps
   )
+
+#target_include_directories(${PROJECT_NAME} PRIVATE
+#  /home/chodak/src/git/easyloggingpp/src
+#  )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE
   -DPLUGIN_NAME="${PROJECT_NAME}"

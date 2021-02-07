@@ -36,6 +36,7 @@ private:
   PluginSystem pluginSystem;
   PluginSystem::LoadedPlugins preloadedPlugins;
   MainLoop mainLoop {nullptr};
+  bool quitCalled {false};
 };
 
 

@@ -7,6 +7,7 @@
 #include "cppps/Cli.h"
 #include "cppps/PluginCollector.h"
 #include "cppps/BoostPluginLoader.h"
+#include "cppps/Logging.h"
 
 #include <filesystem>
 #include <climits>
@@ -76,6 +77,11 @@ int Application::exec(int argc, char** argv)
   }
 
   auto cli = std::make_shared<Cli>(appInfo);
+
+  //TODO: configurable
+  cppps::setupLoggingCli(*cli);
+  cppps::setupLogger();
+
   pluginSystem.prepare(cli, *this);
 
   cli->parse(argc, argv);
@@ -90,11 +96,17 @@ int Application::exec(int argc, char** argv)
   pluginSystem.initialize();
   pluginSystem.start();
 
+  int result = EXIT_SUCCESS;
   if (mainLoop) {
-    return mainLoop();
+    result = mainLoop();
+    mainLoop = nullptr;
   }
 
-  return EXIT_SUCCESS;
+  if (!quitCalled) {
+    quit();
+  }
+
+  return result;
 }
 
 int Application::exec()
@@ -105,6 +117,7 @@ int Application::exec()
 
 void Application::quit()
 {
+  quitCalled = true;
   pluginSystem.stop();
   pluginSystem.unload();
 }

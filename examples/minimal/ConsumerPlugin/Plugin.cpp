@@ -1,7 +1,9 @@
 #include "../ProviderPlugin/IProduct.h"
-#include "cppps/IPlugin.h"
-#include "cppps/ICli.h"
-#include "cppps/IApplication.h"
+#include <cppps/IPlugin.h>
+#include <cppps/ICli.h>
+#include <cppps/IApplication.h>
+#include <cppps/Logging.h>
+
 #include <boost/dll/alias.hpp>
 #include <iostream>
 
@@ -18,9 +20,9 @@ public:
 
     app.setMainLoop([this](){
       for (int i = 0; i < numOfIncreases; ++i) {
-        std::cout << "Increased product value: " << product->increaseValue() << std::endl;
+        LOG(INFO) << "Increased product value: " << product->increaseValue();
       }
-      std::cout << "Exiting" << std::endl;
+      LOG(INFO)<< "Exiting";
       return 0;
     });
   };
@@ -33,7 +35,8 @@ public:
   };
   void initialize() override
   {
-    std::cout << "Initial product value: " << product->getValue() << std::endl;
+    LOG(INFO) << "Using product";
+    LOG(INFO) << "Initial product value: " << product->getValue();
   }
   void start() override {}
   void stop() override {}

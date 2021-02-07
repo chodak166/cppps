@@ -23,6 +23,5 @@ target_link_libraries(${PROJECT_NAME}
  cppps
  )
 
-
 add_subdirectory(ProviderPlugin)
 add_subdirectory(ConsumerPlugin)

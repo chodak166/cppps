@@ -14,6 +14,8 @@
 #include <boost/function.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
+#include <iostream>
+
 using cppps::BoostPluginLoader;
 using cppps::IPluginUPtr;
 using cppps::IPluginDPtr;
@@ -56,7 +58,7 @@ IPluginDPtr BoostPluginLoader::load(std::string_view path)
   catch (boost::system::system_error& e) {
     throw cppps::MakePluginNotFoundException(
           std::string("The required symbol 'make_plugin' has not been found in ")
-          + path.data());
+          + path.data() + " (" + e.what() + ")");
   }
 
   auto plugin = bind(makePlugin(), library);
@@ -71,6 +73,7 @@ void PluginDeleter::operator()(cppps::IPlugin* object)
 {
   if (object) {
     delete object;
+    object = nullptr;
   }
 }
 

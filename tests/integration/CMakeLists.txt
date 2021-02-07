@@ -6,7 +6,7 @@ find_package(Boost REQUIRED COMPONENTS filesystem system)
 
 include_directories(
   ${PROJECT_ROOT}/include
-)
+  )
 
 if (NOT TARGET Catch2)
   add_subdirectory(${PROJECT_ROOT}/submodules/catch2 catch2)
@@ -20,15 +20,15 @@ add_subdirectory(dummy_plugins)
 add_subdirectory(app_plugins)
 
 set(COMMON_LIBS
-    stdc++fs
-    Catch2::Catch2
-    CLI11::CLI11
+  cppps
+  stdc++fs
+  Catch2::Catch2
+  CLI11::CLI11
   )
 
 add_test_executable(TARGET plugin-collector-test
   SOURCES
   PluginCollector.test.cpp
-  ${PROJECT_ROOT}/src/PluginCollector.cpp
 
   LIBS
   ${COMMON_LIBS}
@@ -37,7 +37,6 @@ add_test_executable(TARGET plugin-collector-test
 add_test_executable(TARGET plugin-loader-test
   SOURCES
   BoostPluginLoader.test.cpp
-  ${PROJECT_ROOT}/src/BoostPluginLoader.cpp
 
   LIBS
   ${COMMON_LIBS}
@@ -49,11 +48,6 @@ add_test_executable(TARGET plugin-loader-test
 add_test_executable(TARGET application-test
   SOURCES
   Application.test.cpp
-  ${PROJECT_ROOT}/src/Application.cpp
-  ${PROJECT_ROOT}/src/Cli.cpp
-  ${PROJECT_ROOT}/src/BoostPluginLoader.cpp
-  ${PROJECT_ROOT}/src/PluginCollector.cpp
-  ${PROJECT_ROOT}/src/PluginSystem.cpp
 
   LIBS
   ${COMMON_LIBS}
