@@ -16,6 +16,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(Boost REQUIRED COMPONENTS filesystem system)
 find_package(Logging MODULE)
+find_package(CLI MODULE)
 
 configure_file(src/Logging.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/include/cppps/Logging.h)
@@ -39,7 +40,7 @@ target_include_directories(${PROJECT_NAME}
 
   PRIVATE
   src
-  submodules/cli11/include
+  ${CPPPS_CLI_INCLUDE_DIR}
   )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES

@@ -6,11 +6,13 @@ if (CPPPS_USE_ELPP)
     -DELPP_NO_DEFAULT_LOG_FILE
     )
 
-  set(EASYLOGGINGPP_DIR "${PROJECT_SOURCE_DIR}/submodules/easyloggingpp/src" CACHE STRING "Easylogging++ root directory")
+  set(EASYLOGGINGPP_DIR "${PROJECT_SOURCE_DIR}/submodules/easyloggingpp" CACHE STRING "Easylogging++ root directory")
 
   set(EASYLOGGINGPP_PATHS
     ${EASYLOGGINGPP_DIR}
     $ENV{EASYLOGGINGPP_DIR}
+    "${PROJECT_SOURCE_DIR}/extern/easyloggingpp"
+    "${PROJECT_SOURCE_DIR}/external/easyloggingpp"
     )
 
   find_path(CPPPS_LOGGING_INCLUDE_DIR
