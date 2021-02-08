@@ -5,7 +5,6 @@
 
 #include "cppps/Application.h"
 #include "cppps/Cli.h"
-#include "cppps/PluginCollector.h"
 #include "cppps/BoostPluginLoader.h"
 #include "cppps/Logging.h"
 
@@ -23,6 +22,13 @@ Application::Application(const AppInfo& appInfo)
   : appInfo{appInfo}
 {
   // empty
+}
+
+Application::~Application()
+{
+  if (!quitCalled) {
+    quit();
+  }
 }
 
 void Application::setPluginDirectories(const Application::Directories& dirs)
@@ -55,58 +61,18 @@ void Application::preloadPlugin(IPluginUPtr&& plugin)
 
 int Application::exec(int argc, char** argv)
 {
-  PluginCollector collector;
-  collector.addDirectories(pluginDirs);
+  auto pluginPaths = collectPlugins();
+  loadPlugins(pluginPaths);
 
-#ifdef _WIN32
-  collector.addPluginExtension("dll");
-#else
-  collector.addPluginExtension("so");
-#endif
-
-  for (auto& preloadedPlugin: preloadedPlugins) {
-    pluginSystem.addPlugin(std::move(preloadedPlugin));
-  }
-  preloadedPlugins.clear();
-
-  auto pluginPaths = collector.collectPlugins();
-  BoostPluginLoader loader;
-  for (const auto& pluginPath: pluginPaths) {
-    auto plugin = loader.load(pluginPath);
-    pluginSystem.addPlugin(std::move(plugin));
-  }
-
-  auto cli = std::make_shared<Cli>(appInfo);
-
-  //TODO: configurable
-  cppps::setupLoggingCli(*cli);
-  cppps::setupLogger();
-
-  pluginSystem.prepare(cli, *this);
-
-  cli->parse(argc, argv);
-  if (cli->hasMessage()) {
-    std::cout << cli->getMessage();
-  }
-
-  if (cli->shouldAppQuit()) {
+  auto parseResult = parseCli(argc, argv);
+  if (parseResult == CliParseResult::QUIT) {
     return EXIT_SUCCESS;
   }
 
   pluginSystem.initialize();
   pluginSystem.start();
 
-  int result = EXIT_SUCCESS;
-  if (mainLoop) {
-    result = mainLoop();
-    mainLoop = nullptr;
-  }
-
-  if (!quitCalled) {
-    quit();
-  }
-
-  return result;
+  return execMainLoop();
 }
 
 int Application::exec()
@@ -128,5 +94,71 @@ void Application::setMainLoop(const MainLoop& loop)
     throw std::runtime_error("Possible plugin conflict - main loop already set");
   }
   mainLoop = loop;
+}
+
+PluginCollector::Paths Application::collectPlugins()
+{
+  PluginCollector collector;
+  collector.addDirectories(pluginDirs);
+
+#ifdef _WIN32
+  collector.addPluginExtension("dll");
+#else
+  collector.addPluginExtension("so");
+#endif
+
+  for (auto& preloadedPlugin: preloadedPlugins) {
+    pluginSystem.addPlugin(std::move(preloadedPlugin));
+  }
+  preloadedPlugins.clear();
+
+  return collector.collectPlugins();
+}
+
+void Application::loadPlugins(const PluginCollector::Paths& pluginPaths)
+{
+  BoostPluginLoader loader;
+  for (const auto& pluginPath: pluginPaths) {
+    auto plugin = loader.load(pluginPath);
+    pluginSystem.addPlugin(std::move(plugin));
+  }
+}
+
+Application::CliParseResult Application::parseCli(int argc, char** argv)
+{
+  auto cli = std::make_shared<Cli>(appInfo);
+
+  if (appInfo.setupLogger) {
+    cppps::setupLoggingCli(*cli);
+  }
+
+  pluginSystem.prepare(cli, *this);
+
+  cli->parse(argc, argv);
+  if (cli->hasMessage()) {
+    std::cout << cli->getMessage();
+  }
+
+  if (cli->shouldAppQuit()) {
+    return CliParseResult::QUIT;
+  }
+
+  if (appInfo.setupLogger) {
+    cppps::setupLogger();
+  }
+
+  return CliParseResult::CONTINUE;
+}
+
+int Application::execMainLoop()
+{
+  int result = EXIT_SUCCESS;
+  if (mainLoop) {
+    result = mainLoop();
+    // dispose main loop handle in case
+    // a plugin passed lambda capturing "this":
+    mainLoop = nullptr;
+  }
+  return result;
 }
 

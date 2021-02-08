@@ -17,6 +17,7 @@ struct AppInfo
   std::string appVersionPage;
   int columnWidth {40};
   bool interruptable {true};
+  bool setupLogger {true};
 };
 
 } // namespace cppps

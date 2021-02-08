@@ -6,13 +6,13 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include ${LOGGING_HEADER}
+#include ${CPPPS_LOGGING_HEADER}
 
 namespace cppps {
 
-class  Cli;
+class  ICli;
 
-void setupLoggingCli(Cli& cli);
+void setupLoggingCli(ICli& cli);
 void setupLogger();
 
 } // namespace pb::common::main

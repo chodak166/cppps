@@ -27,14 +27,15 @@ add_library(${PROJECT_NAME} SHARED
   src/PluginCollector.cpp
   src/PluginSystem.cpp
 
-  ${LOGGING_SOURCES}
+  ${CPPPS_LOGGING_SOURCES}
   )
+add_library(cppps::cppps ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   include
   ${CMAKE_CURRENT_BINARY_DIR}/include
-  ${LOGGING_INCLUDE_DIR}
+  ${CPPPS_LOGGING_INCLUDE_DIR}
 
   PRIVATE
   src
@@ -49,7 +50,7 @@ target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   dl
   stdc++fs
-  ${LOGGING_LIBS}
+  ${CPPPS_LOGGING_LIBS}
   )
 
 enable_testing(ON)

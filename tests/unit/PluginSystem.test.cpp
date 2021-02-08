@@ -219,7 +219,6 @@ TEST_CASE_METHOD(test::Fixture, "Testing plugin life cycle", "[ps_cycle]")
   }
 
   //TODO: should the unload() method be called after an exception is thrown?
-
 }
 
 

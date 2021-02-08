@@ -4,7 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
 #include "cppps/Logging.h"
-#include "cppps/Cli.h"
+#include "cppps/ICli.h"
 
 #include <easylogging++.h>
 #include <filesystem>
@@ -12,7 +12,7 @@
 
 INITIALIZE_EASYLOGGINGPP
 
-using cppps::Cli;
+using cppps::ICli;
 
 namespace {
 
@@ -22,15 +22,16 @@ uintmax_t maxLogFileSizeKB {5 * 1024}; // 5MB
 int flushThreshold {1};
 int subsecondPrecision {4};
 int verbosity {0};
+bool noStdOut {false};
 
 void rolloutHandler(const char *filename, std::size_t size);
 
-
 }
 
-void cppps::setupLoggingCli(Cli& cli)
+void cppps::setupLoggingCli(ICli& cli)
 {
-  cli.addFlag("--debug", debug, "Log debug and trace messages");
+  cli.addFlag("--log-debug", debug, "Log debug and trace messages");
+  cli.addFlag("--log-nostd", noStdOut, "Do not log to the standard output");
   cli.addOption("--log-file", logFile, "Log file path, disabled if empty (default)");
   cli.addOption("--log-file-size", maxLogFileSizeKB, "Max log file size (KB) until rotated");
   cli.addOption("--log-flush", flushThreshold, "Log flush threshlod");
@@ -45,7 +46,7 @@ void cppps::setupLogger()
   elConfig.setGlobally(
         el::ConfigurationType::Format, "%datetime [%level]: %msg");
   elConfig.setGlobally(
-        el::ConfigurationType::ToStandardOutput, "true");
+        el::ConfigurationType::ToStandardOutput, noStdOut ? "false" : "true");
   elConfig.setGlobally(
         el::ConfigurationType::PerformanceTracking, "false");
   elConfig.setGlobally(

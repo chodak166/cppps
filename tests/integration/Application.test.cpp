@@ -5,6 +5,7 @@
 
 #include "cppps/Application.h"
 #include "cppps/Cli.h"
+#include "cppps/Logging.h"
 
 #include <iostream>
 #include <filesystem>
@@ -61,7 +62,9 @@ public:
   void initialize() override {values.state = State::INITIALIZED;}
   void start() override {values.state = State::STARTED;}
   void stop() override {values.state = State::STOPPED;}
-  void unload() override {values.state = State::UNLOADED;}
+  void unload() override {
+    LOG(DEBUG) << "Unloading spy plugin";
+    values.state = State::UNLOADED;}
 
 private:
   Values& values;
@@ -182,4 +185,23 @@ TEST_CASE("Testing application CLI", "[app_cli]")
   }
 
   app.quit();
+}
+
+TEST_CASE("Testing application destruction", "[app_destruct]")
+{
+  SECTION("When the application is destroyed without calling the quit method, "
+          "then all plugins are unloaded anyway")
+  {
+    test::SpyPlugin::Values values;
+
+    {
+      Application app(test::info);
+      app.setPluginDirectories({Application::getAppDirPath() + "/app_plugins"});
+      app.preloadPlugin(std::make_unique<test::SpyPlugin>(values));
+      app.exec();
+      values.product = nullptr; // don't let the product outlive the app
+    }
+
+    REQUIRE(values.state == test::SpyPlugin::State::UNLOADED);
+  }
 }

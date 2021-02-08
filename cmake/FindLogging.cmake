@@ -1,7 +1,10 @@
 set(CPPPS_USE_ELPP OFF CACHE BOOL "Use Easylogging++ logging library")
 
 if (CPPPS_USE_ELPP)
-  add_definitions(-DCPPPS_USE_ELPP)
+  add_definitions(
+    -DCPPPS_USE_ELPP
+    -DELPP_NO_DEFAULT_LOG_FILE
+    )
 
   set(EASYLOGGINGPP_DIR "${PROJECT_SOURCE_DIR}/submodules/easyloggingpp/src" CACHE STRING "Easylogging++ root directory")
 
@@ -10,14 +13,14 @@ if (CPPPS_USE_ELPP)
     $ENV{EASYLOGGINGPP_DIR}
     )
 
-  find_path(LOGGING_INCLUDE_DIR
+  find_path(CPPPS_LOGGING_INCLUDE_DIR
     easylogging++.h
     PATH_SUFFIXES include src
     PATHS ${EASYLOGGINGPP_PATHS}
     )
 
-  if (LOGGING_INCLUDE_DIR)
-    set(LOGGING_HEADER "<easylogging++.h>")
+  if (CPPPS_LOGGING_INCLUDE_DIR)
+    set(CPPPS_LOGGING_HEADER "<easylogging++.h>")
   endif()
 
   find_library(EASYLOGGINGPP_LIBRARY
@@ -26,27 +29,27 @@ if (CPPPS_USE_ELPP)
     )
 
   if (NOT EASYLOGGINGPP_LIBRARY)
-    find_path(LOGGING_SRC_DIR
+    find_path(CPPPS_LOGGING_SRC_DIR
       easylogging++.cc
       PATH_SUFFIXES src
       PATHS ${EASYLOGGINGPP_PATHS}
       )
 
-    if (NOT LOGGING_SRC_DIR)
+    if (NOT CPPPS_LOGGING_SRC_DIR)
       message(FATAL_ERROR "CPPPS_USE_ELPP is set but the easylogging++ library has not been found. Consider using EASYLOGGINGPP_DIR variable." )
     else()
-      set(LOGGING_SOURCES
+      set(CPPPS_LOGGING_SOURCES
         ${LOGGING_SRC_DIR}/easylogging++.cc
         ${PROJECT_SOURCE_DIR}/src/ElppLogging.cpp)
     endif()
   else()
-    set(LOGGING_LIBS ${EASYLOGGINGPP_LIBRARY})
+    set(CPPPS_LOGGING_LIBS ${EASYLOGGINGPP_LIBRARY})
   endif()
 
 else()
-  set(LOGGING_SOURCES ${PROJECT_SOURCE_DIR}/src/StdLogging.cpp)
-  set(LOGGING_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src)
-  set(LOGGING_HEADER "\"cppps/stdeasylog.h\"")
+  set(CPPPS_LOGGING_SOURCES ${PROJECT_SOURCE_DIR}/src/StdLogging.cpp)
+  set(CPPPS_LOGGING_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src)
+  set(CPPPS_LOGGING_HEADER "\"cppps/stdeasylog.h\"")
 endif()
 
-find_package_handle_standard_args(Logging REQUIRED_VARS LOGGING_INCLUDE_DIR LOGGING_HEADER)
+find_package_handle_standard_args(Logging REQUIRED_VARS CPPPS_LOGGING_INCLUDE_DIR CPPPS_LOGGING_HEADER)

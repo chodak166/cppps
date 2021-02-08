@@ -14,7 +14,7 @@ constexpr int VERSION_REQUEST_CODE = -1;
 
 void setupStandardOptions(CLI::App& cliApp)
 {
-  //TODO: use CallForVersion
+  //TODO: use CallForVersion when available in CLI11 release
   cliApp.add_flag_function("-v,--version", [](size_t) {
       throw CLI::CallForHelp("Version request found", VERSION_REQUEST_CODE);
     }, "Print application version");

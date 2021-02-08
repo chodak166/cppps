@@ -9,6 +9,7 @@
 #include "cppps/IApplication.h"
 #include "cppps/AppInfo.h"
 #include "cppps/PluginSystem.h"
+#include "cppps/PluginCollector.h"
 
 namespace cppps {
 
@@ -18,7 +19,7 @@ public:
   using Directories = std::list<std::string>;
 
   Application(const AppInfo& appInfo);
-  virtual ~Application() = default;
+  virtual ~Application();
 
   void setPluginDirectories(const Directories& dirs);
   static std::string getAppDirPath();
@@ -37,6 +38,13 @@ private:
   PluginSystem::LoadedPlugins preloadedPlugins;
   MainLoop mainLoop {nullptr};
   bool quitCalled {false};
+
+private:
+  enum class CliParseResult {QUIT, CONTINUE};
+  PluginCollector::Paths collectPlugins();
+  void loadPlugins(const PluginCollector::Paths& pluginPaths);
+  CliParseResult parseCli(int argc, char** argv);
+  int execMainLoop();
 };
 
 

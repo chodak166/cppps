@@ -1,29 +1,17 @@
-set(Boost_USE_STATIC_LIBS ON)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
-
-find_package(Boost REQUIRED COMPONENTS filesystem system)
+set(CPPPS_CATCH2_DIR "${PROJECT_ROOT}/submodules/catch2" CACHE STRING "Catch2 root directory")
 
 include_directories(
-  ${PROJECT_ROOT}/include
-  )
-
-if (NOT TARGET Catch2)
-  add_subdirectory(${PROJECT_ROOT}/submodules/catch2 catch2)
-endif()
-
-if (NOT TARGET CLI11)
-  add_subdirectory(${PROJECT_ROOT}/submodules/cli11 cli11)
-endif()
+#  ${PROJECT_ROOT}/include
+#  ${PROJECT_ROOT}/submodules
+  ${CPPPS_CATCH2_DIR}/include
+  ${CPPPS_CATCH2_DIR}/single_include
+)
 
 add_subdirectory(dummy_plugins)
 add_subdirectory(app_plugins)
 
 set(COMMON_LIBS
-  cppps
-  stdc++fs
-  Catch2::Catch2
-  CLI11::CLI11
+  cppps::cppps
   )
 
 add_test_executable(TARGET plugin-collector-test
@@ -40,9 +28,6 @@ add_test_executable(TARGET plugin-loader-test
 
   LIBS
   ${COMMON_LIBS}
-  Boost::system
-  Boost::filesystem
-  dl
   )
 
 add_test_executable(TARGET application-test
@@ -51,9 +36,6 @@ add_test_executable(TARGET application-test
 
   LIBS
   ${COMMON_LIBS}
-  Boost::system
-  Boost::filesystem
-  dl
   )
 
 # export symbols to enable shared template instantiation (including resources)

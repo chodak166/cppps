@@ -4,17 +4,14 @@
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
 #include "cppps/Logging.h"
-#include "cppps/Cli.h"
-#include "cppps/stdeasylog.h"
+#include "cppps/ICli.h"
 
-using cppps::Cli;
-
-void cppps::setupLoggingCli(Cli& /*cli*/)
+void cppps::setupLoggingCli(ICli& /*cli*/)
 {
-  LOG(WARNING) << "Warning: logger CLI setup ignored by the simplified logger";
+  // empty
 }
 
 void cppps::setupLogger()
 {
-  LOG(WARNING) << "Warning: logger setup ignored by the simplified logger";
+  // empty
 }

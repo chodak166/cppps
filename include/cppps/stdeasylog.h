@@ -60,7 +60,7 @@ Log operator<<(LogStarter&& starter, T const& value)
   return std::move(Log(starter.stream) << value);
 }
 
-std::string getStdLogTimeString()
+inline std::string getStdLogTimeString()
 {
   using namespace std::chrono;
 
