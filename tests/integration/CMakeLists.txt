@@ -1,10 +1,9 @@
-set(CPPPS_CATCH2_DIR "${PROJECT_ROOT}/submodules/catch2" CACHE STRING "Catch2 root directory")
+find_package(Catch2 MODULE)
+find_package(FakeIt MODULE)
 
 include_directories(
-#  ${PROJECT_ROOT}/include
-#  ${PROJECT_ROOT}/submodules
-  ${CPPPS_CATCH2_DIR}/include
-  ${CPPPS_CATCH2_DIR}/single_include
+  ${CPPPS_CATCH2_INCLUDE_DIR}
+  ${CPPPS_FAKEIT_INCLUDE_DIR}
 )
 
 add_subdirectory(dummy_plugins)

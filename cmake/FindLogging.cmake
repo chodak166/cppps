@@ -11,8 +11,13 @@ if (CPPPS_USE_ELPP)
   set(EASYLOGGINGPP_PATHS
     ${EASYLOGGINGPP_DIR}
     $ENV{EASYLOGGINGPP_DIR}
+    "${EXTERN_DIR}/easyloggingpp"
     "${PROJECT_SOURCE_DIR}/extern/easyloggingpp"
     "${PROJECT_SOURCE_DIR}/external/easyloggingpp"
+    "${PROJECT_SOURCE_DIR}/submodules/easyloggingpp"
+    "${CMAKE_SOURCE_DIR}/extern/easyloggingpp"
+    "${CMAKE_SOURCE_DIR}/external/easyloggingpp"
+    "${CMAKE_SOURCE_DIR}/submodules/easyloggingpp"
     )
 
   find_path(CPPPS_LOGGING_INCLUDE_DIR
@@ -41,7 +46,7 @@ if (CPPPS_USE_ELPP)
       message(FATAL_ERROR "CPPPS_USE_ELPP is set but the easylogging++ library has not been found. Consider using EASYLOGGINGPP_DIR variable." )
     else()
       set(CPPPS_LOGGING_SOURCES
-        ${LOGGING_SRC_DIR}/easylogging++.cc
+        ${CPPPS_LOGGING_SRC_DIR}/easylogging++.cc
         ${PROJECT_SOURCE_DIR}/src/ElppLogging.cpp)
     endif()
   else()

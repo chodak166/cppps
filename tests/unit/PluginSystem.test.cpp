@@ -11,7 +11,7 @@
 #include "cppps/Resource.h"
 
 #include <catch2/catch.hpp>
-#include <fakeit/single_header/catch/fakeit.hpp>
+#include <catch/fakeit.hpp>
 
 #include <map>
 #include <string_view>

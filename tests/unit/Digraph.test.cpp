@@ -4,7 +4,7 @@
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
 #include "cppps/Digraph.h"
-#include <catch2/single_include/catch2/catch.hpp>
+#include <catch2/catch.hpp>
 
 using cppps::Digraph;
 using cppps::DuplicatedNodeException;

@@ -45,6 +45,8 @@ private:
   void loadPlugins(const PluginCollector::Paths& pluginPaths);
   CliParseResult parseCli(int argc, char** argv);
   int execMainLoop();
+  void setupInterruptHandler();
+
 };
 
 

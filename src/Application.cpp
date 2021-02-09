@@ -18,10 +18,25 @@
 
 using namespace cppps;
 
+
+namespace  {
+
+static bool instanceExists {false};
+std::function<void(int)> quitApp {[](int){}};
+
+void signalHandler(int signum) {
+    quitApp(signum);
+}
+
+}
+
 Application::Application(const AppInfo& appInfo)
   : appInfo{appInfo}
 {
-  // empty
+  if (instanceExists) {
+    throw std::runtime_error("Threre can be only one instance of the Application class");
+  }
+  instanceExists = true;
 }
 
 Application::~Application()
@@ -29,6 +44,7 @@ Application::~Application()
   if (!quitCalled) {
     quit();
   }
+  pluginSystem.unload();
 }
 
 void Application::setPluginDirectories(const Application::Directories& dirs)
@@ -61,6 +77,10 @@ void Application::preloadPlugin(IPluginUPtr&& plugin)
 
 int Application::exec(int argc, char** argv)
 {
+  if (appInfo.interruptable) {
+    setupInterruptHandler();
+  }
+
   auto pluginPaths = collectPlugins();
   loadPlugins(pluginPaths);
 
@@ -85,7 +105,6 @@ void Application::quit()
 {
   quitCalled = true;
   pluginSystem.stop();
-  pluginSystem.unload();
 }
 
 void Application::setMainLoop(const MainLoop& loop)
@@ -162,3 +181,12 @@ int Application::execMainLoop()
   return result;
 }
 
+void Application::setupInterruptHandler()
+{
+  quitApp = [this](int){
+    quit();
+  };
+
+  signal(SIGINT, signalHandler);
+  signal(SIGTERM, signalHandler);
+}
