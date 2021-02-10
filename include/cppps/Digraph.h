@@ -198,17 +198,15 @@ typename Digraph<K, T>::SortedNodes Digraph<K, T>::topologicalSort() const
 template <class K, class T>
 typename Digraph<K, T>::Cycles Digraph<K, T>::findCycles() const
 {
-  BoolNodes visited(nodes.size(), false);
   Cycles cycles;
   Cycle cycle;
 
   for (Index i = 0; i < nodes.size(); ++i) {
-    if (!visited.at(i)) {
-      advanceFindCycle(i, cycle, visited);
-      if (!cycle.empty()) {
-        cycles.push_back(cycle);
-        cycle.clear();
-      }
+    BoolNodes visited(nodes.size(), false);
+    advanceFindCycle(i, cycle, visited);
+    if (!cycle.empty()) {
+      cycles.push_back(cycle);
+      cycle.clear();
     }
   }
   return cycles;
@@ -239,8 +237,8 @@ void Digraph<K, T>::advanceFindCycle(Digraph<K, T>::Index index,
                                      Digraph<K, T>::BoolNodes& visited) const
 {
   visited[index] = true;
-
   auto& node = nodes.at(index);
+
   for (auto& nextNodeIndex: node.nextNodes) {
     if (visited.at(nextNodeIndex)) {
       for (Index i = nextNodeIndex; i <= index; ++i) {
