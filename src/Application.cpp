@@ -11,6 +11,7 @@
 #include <filesystem>
 #include <climits>
 #include <iostream>
+#include <csignal>
 
 #ifdef __unix
 #include <unistd.h>

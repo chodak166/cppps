@@ -236,11 +236,15 @@ void Digraph<K, T>::advanceFindCycle(Digraph<K, T>::Index index,
                                      Digraph<K, T>::Cycle& cycle,
                                      Digraph<K, T>::BoolNodes& visited) const
 {
-  visited[index] = true;
   auto& node = nodes.at(index);
+  if (node.nextNodes.empty()) { // no cycles possible in that path
+    std::fill(visited.begin(), visited.end(), false);
+    return;
+  }
 
+  visited[index] = true;
   for (auto& nextNodeIndex: node.nextNodes) {
-    if (visited.at(nextNodeIndex)) {
+    if (visited.at(nextNodeIndex)) { // cycle found
       for (Index i = nextNodeIndex; i <= index; ++i) {
         cycle.push_back(nodes.at(i).data);
       }

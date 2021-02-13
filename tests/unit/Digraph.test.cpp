@@ -315,22 +315,7 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
     REQUIRE(cycles.size() == 1);
   }
 
-  SECTION("When the graph has no cycles, "
-          "then no cycles are found")
-  {
-    graph.addNode(test::NODE_A);
-    graph.addNode(test::NODE_B);
-    graph.addNode(test::NODE_C);
-
-    graph.addEdge(test::NODE_A, test::NODE_B);
-    graph.addEdge(test::NODE_A, test::NODE_C);
-
-    auto cycle = graph.findCycles();
-
-    REQUIRE(cycle.empty());
-  }
-
-  SECTION("When the graph has no cycles and the head node was added before its tail, "
+  SECTION("When the graph contains a node being the head and the tail but there are no cycles, "
           "then no cycles are found")
   {
     graph.addNode(test::NODE_A);
@@ -344,12 +329,29 @@ TEST_CASE("Testing finding cycles", "[graph_cycles]")
     REQUIRE(cycle.empty());
   }
 
-  SECTION("When the graph contains a node being the head and the tail but there are no cycles, "
+  SECTION("When the graph has no cycles and the head node was added before its tail, "
           "then no cycles are found")
   {
     graph.addNode(test::NODE_B);
     graph.addNode(test::NODE_A);
     graph.addEdge(test::NODE_A, test::NODE_B);
+
+    auto cycle = graph.findCycles();
+
+    REQUIRE(cycle.empty());
+  }
+
+  SECTION("When the graph has no cycles and contains non-path ending nodes being common heads, "
+          "then no cycles are found")
+  {
+    graph.addNode(test::NODE_A);
+    graph.addNode(test::NODE_B);
+    graph.addNode(test::NODE_C);
+    graph.addNode(test::NODE_D);
+    graph.addEdge(test::NODE_A, test::NODE_B);
+    graph.addEdge(test::NODE_B, test::NODE_C);
+    graph.addEdge(test::NODE_A, test::NODE_D);
+    graph.addEdge(test::NODE_D, test::NODE_C);
 
     auto cycle = graph.findCycles();
 
