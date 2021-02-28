@@ -46,6 +46,7 @@ Application::~Application()
     quit();
   }
   pluginSystem.unload();
+  instanceExists = false;
 }
 
 void Application::setPluginDirectories(const Application::Directories& dirs)

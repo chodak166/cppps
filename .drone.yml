@@ -1,0 +1,22 @@
+kind: pipeline
+name: default
+
+steps:
+- name: build
+  image: chodak166/cpp-dev:focal-base-1.0
+  commands:
+  - git submodule init
+  - git submodule update
+  - mkdir build
+  - cd build
+  - cmake
+    -D CPPPS_UNIT_TESTS_BUILD=ON
+    -D CPPPS_INTEGRATION_TESTS_BUILD=ON
+    ..
+  - cmake --build .
+
+- name: test
+  image: chodak166/cpp-dev:focal-base-1.0
+  commands:
+  - cd build
+  - ctest -V .

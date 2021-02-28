@@ -56,12 +56,12 @@ target_link_libraries(${PROJECT_NAME}
 
 enable_testing(ON)
 
-option(CPPPS_UNIT_TESTS_BUILD "Build CPPPS unit tests")
+option(CPPPS_UNIT_TESTS_BUILD "Build CPPPS unit tests" ON)
 if (${CPPPS_UNIT_TESTS_BUILD})
   add_subdirectory(tests/unit)
 endif()
 
-option(CPPPS_INTEGRATION_TESTS_BUILD "Build CPPPS integraton tests")
+option(CPPPS_INTEGRATION_TESTS_BUILD "Build CPPPS integraton tests" ON)
 if (${CPPPS_INTEGRATION_TESTS_BUILD})
   add_subdirectory(tests/integration)
 endif()
