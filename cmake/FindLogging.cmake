@@ -47,16 +47,16 @@ if (CPPPS_USE_ELPP)
     else()
       set(CPPPS_LOGGING_SOURCES
         ${CPPPS_LOGGING_SRC_DIR}/easylogging++.cc
-        ${PROJECT_SOURCE_DIR}/src/ElppLogging.cpp)
+        ${PROJECT_SOURCE_DIR}/lib/logging/src/ElppLogging.cpp)
     endif()
   else()
     set(CPPPS_LOGGING_LIBS ${EASYLOGGINGPP_LIBRARY})
   endif()
 
 else()
-  set(CPPPS_LOGGING_SOURCES ${PROJECT_SOURCE_DIR}/src/StdLogging.cpp)
-  set(CPPPS_LOGGING_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/src)
-  set(CPPPS_LOGGING_HEADER "\"cppps/stdeasylog.h\"")
+  set(CPPPS_LOGGING_SOURCES ${PROJECT_SOURCE_DIR}/lib/logging/src/StdLogging.cpp)
+  set(CPPPS_LOGGING_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/lib/logging/src)
+  set(CPPPS_LOGGING_HEADER "\"cppps/logging/stdeasylog.h\"")
 endif()
 
 find_package_handle_standard_args(Logging REQUIRED_VARS CPPPS_LOGGING_INCLUDE_DIR CPPPS_LOGGING_HEADER)
