@@ -3,18 +3,23 @@
 // See accompanying file LICENSE.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
+
 #ifndef LOGGING_H
 #define LOGGING_H
 
 #include ${CPPPS_LOGGING_HEADER}
 
+#include "cppps/logging/LoggerSettings.h"
+#include <memory>
+
 namespace cppps {
 
-class  ICli;
+class Logger;
+using LoggerPtr = std::shared_ptr<Logger>;
 
-void setupLoggingCli(ICli& cli);
-void setupLogger();
+LoggerPtr setupLogger(const LoggerSettings& settings = LoggerSettings());
+void importLogger(const LoggerPtr& logger);
 
-} // namespace pb::common::main
+} // namespace cppps
 
 #endif // LOGGING_H

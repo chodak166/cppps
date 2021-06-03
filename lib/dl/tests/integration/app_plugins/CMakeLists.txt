@@ -26,7 +26,7 @@ macro(add_plugin PLUGIN_NAME PLUGIN_SRC)
 
   target_include_directories(${PLUGIN_NAME}
     PRIVATE
-    ${PROJECT_ROOT}/include
+    ${LIB_ROOT}/include
     )
 
   target_link_libraries(${PLUGIN_NAME}

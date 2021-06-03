@@ -30,6 +30,7 @@ macro(add_plugin PLUGIN_NAME PLUGIN_SRC)
     )
 
   target_link_libraries(${PLUGIN_NAME}
+    cppps::dl
     ${Boost_LIBRARIES}
     )
 

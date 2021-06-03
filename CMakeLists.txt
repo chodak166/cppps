@@ -8,3 +8,7 @@ if (${CPPPS_DL_BUILD})
   add_subdirectory(lib/dl)
 endif()
 
+option(CPPPS_LOGGING_BUILD "Build CPPPS logging library" ON)
+if (${CPPPS_DL_BUILD})
+  add_subdirectory(lib/logging)
+endif()

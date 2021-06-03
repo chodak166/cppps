@@ -2,65 +2,67 @@
 // Distributed under the Boost Software License v1.0.
 // See accompanying file LICENSE.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
-
-#include "cppps/Logging.h"
-#include "cppps/ICli.h"
+ 
+#include "cppps/logging/Logging.h"
 
 #include <easylogging++.h>
 #include <filesystem>
 #include <iostream>
 
-INITIALIZE_EASYLOGGINGPP
+INITIALIZE_NULL_EASYLOGGINGPP
 
-using cppps::ICli;
+using cppps::LoggerPtr;
 
 namespace {
-
-bool debug {false};
-std::string logFile;
-uintmax_t maxLogFileSizeKB {5 * 1024}; // 5MB
-int flushThreshold {1};
-int subsecondPrecision {4};
-int verbosity {0};
-bool noStdOut {false};
 
 void rolloutHandler(const char *filename, std::size_t size);
 
 }
 
-void cppps::setupLoggingCli(ICli& cli)
-{
-  cli.addFlag("--log-debug", debug, "Log debug and trace messages");
-  cli.addFlag("--log-nostd", noStdOut, "Do not log to the standard output");
-  cli.addOption("--log-file", logFile, "Log file path, disabled if empty (default)");
-  cli.addOption("--log-file-size", maxLogFileSizeKB, "Max log file size (KB) until rotated");
-  cli.addOption("--log-flush", flushThreshold, "Log flush threshlod");
-  cli.addOption("--log-verbosity", verbosity, "Log verbosity level");
-}
+namespace cppps {
 
-void cppps::setupLogger()
+class Logger
 {
+public:
+  Logger(const el::base::type::StoragePointer& storage)
+    : storage{storage} {}
+  el::base::type::StoragePointer getStorage() {return storage;}
+private:
+  el::base::type::StoragePointer storage;
+};
+
+} // namespace cppps
+
+LoggerPtr cppps::setupLogger(const LoggerSettings& settings)
+{
+  auto storage = el::Helpers::storage();
+  if (!storage) {
+    storage = std::make_shared<el::base::Storage>(el::LogBuilderPtr(
+                                  new el::base::DefaultLogBuilder()));
+    el::Helpers::setStorage(storage);
+  }
+
   el::Configurations elConfig;
   elConfig.setToDefault();
 
   elConfig.setGlobally(
         el::ConfigurationType::Format, "%datetime [%level]: %msg");
   elConfig.setGlobally(
-        el::ConfigurationType::ToStandardOutput, noStdOut ? "false" : "true");
+        el::ConfigurationType::ToStandardOutput, settings.noStdOut ? "false" : "true");
   elConfig.setGlobally(
         el::ConfigurationType::PerformanceTracking, "false");
   elConfig.setGlobally(
-        el::ConfigurationType::SubsecondPrecision, std::to_string(subsecondPrecision));
+        el::ConfigurationType::SubsecondPrecision, std::to_string(settings.subsecondPrecision));
   elConfig.setGlobally(
-        el::ConfigurationType::MaxLogFileSize, std::to_string(maxLogFileSizeKB * 1024));
+        el::ConfigurationType::MaxLogFileSize, std::to_string(settings.maxLogFileSizeKB * 1024));
   elConfig.setGlobally(
-        el::ConfigurationType::LogFlushThreshold, std::to_string(flushThreshold));
+        el::ConfigurationType::LogFlushThreshold, std::to_string(settings.flushThreshold));
 
   elConfig.setGlobally(
-        el::ConfigurationType::ToFile, logFile.empty() ? "false" : "true");
-  if(!logFile.empty())
+        el::ConfigurationType::ToFile, settings.logFile.empty() ? "false" : "true");
+  if(!settings.logFile.empty())
     elConfig.setGlobally(
-          el::ConfigurationType::Filename, logFile);
+          el::ConfigurationType::Filename, settings.logFile);
 
   //display function name in debug logs
   elConfig.set(el::Level::Debug,
@@ -71,16 +73,27 @@ void cppps::setupLogger()
                el::ConfigurationType::Format, "%datetime [%level] (%loc): %msg");
 
 
-  elConfig.set(el::Level::Debug, el::ConfigurationType::Enabled, debug ? "true" : "false");
-  elConfig.set(el::Level::Trace, el::ConfigurationType::Enabled, debug ? "true" : "false");
+  elConfig.set(el::Level::Debug,
+               el::ConfigurationType::ToStandardOutput, settings.debug ? "true" : "false");
+
+  elConfig.set(el::Level::Debug, el::ConfigurationType::Enabled, settings.debug ? "true" : "false");
+  elConfig.set(el::Level::Trace, el::ConfigurationType::Enabled, settings.debug ? "true" : "false");
 
   //handle file rolling
   el::Loggers::addFlag(el::LoggingFlag::StrictLogFileSizeCheck);
   el::Helpers::installPreRollOutCallback(rolloutHandler);
 
-  el::Loggers::setVerboseLevel(verbosity);
+  el::Loggers::setVerboseLevel(settings.verbosity);
   el::Loggers::reconfigureLogger("default", elConfig);
+
+  return std::make_shared<Logger>(el::Helpers::storage());
 }
+
+void cppps::importLogger(const LoggerPtr& logger)
+{
+  el::Helpers::setStorage(logger->getStorage());
+}
+
 
 // ---------
 

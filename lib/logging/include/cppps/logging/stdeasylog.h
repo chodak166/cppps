@@ -67,7 +67,7 @@ inline std::string getStdLogTimeString()
   auto now = system_clock::now();
   auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
   auto in_time_t = system_clock::to_time_t(now);
-  const auto format = "%Y-%m-%d %X," + std::to_string(ms.count());
+  const auto format = "%Y-%m-%d %X," + std::to_string(ms.count()) + " [STDLOG]";
 
   std::stringstream ss;
   ss << std::put_time(std::localtime(&in_time_t), format.data());

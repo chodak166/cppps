@@ -10,7 +10,7 @@ add_subdirectory(dummy_plugins)
 add_subdirectory(app_plugins)
 
 set(COMMON_LIBS
-  cppps::cppps
+  cppps::dl
   )
 
 add_test_executable(TARGET plugin-collector-test

@@ -11,3 +11,6 @@
 	url = https://github.com/CLIUtils/CLI11.git
 	shallow = true
 
+[submodule "submodules/easyloggingpp"]
+	path = submodules/easyloggingpp
+	url = https://github.com/amrayn/easyloggingpp.git

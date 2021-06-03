@@ -9,10 +9,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib)
 
-set(PROJECT_ROOT ${PROJECT_SOURCE_DIR})
+get_filename_component(PROJECT_ROOT ../../ ABSOLUTE)
 
-include("${CMAKE_CURRENT_LIST_DIR}/../../cmake/helpers.cmake")
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake")
+include("${PROJECT_ROOT}/cmake/helpers.cmake")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_ROOT}/cmake/modules")
 
 find_package(Boost REQUIRED COMPONENTS filesystem system) #TODO make boost optional
 find_package(CLI MODULE)
@@ -24,13 +24,12 @@ add_library(${PROJECT_NAME} SHARED
   src/PluginCollector.cpp
   src/PluginSystem.cpp
   )
-add_library(cppps::cppps ALIAS ${PROJECT_NAME})
+add_library(cppps::dl ALIAS ${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
   include
   ${CMAKE_CURRENT_BINARY_DIR}/include
-  ${CPPPS_LOGGING_INCLUDE_DIR}
 
   PRIVATE
   src
@@ -45,10 +44,11 @@ target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   dl
   stdc++fs
-  ${CPPPS_LOGGING_LIBS}
   )
 
 enable_testing(ON)
+
+set(LIB_ROOT ${CMAKE_CURRENT_LIST_DIR})
 
 option(CPPPS_UNIT_TESTS_BUILD "Build CPPPS unit tests")
 if (${CPPPS_UNIT_TESTS_BUILD})
