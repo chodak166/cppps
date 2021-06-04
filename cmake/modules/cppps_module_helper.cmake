@@ -1,15 +1,15 @@
-macro(PB_ADD_MODULE PB_LIB_DIR PB_LIB_TARGET PB_LIB_ALIAS)
+macro(CPPPS_ADD_MODULE CPPPS_LIB_DIR CPPPS_LIB_TARGET CPPPS_LIB_ALIAS)
 
-  if (NOT COMMON_DIR)
-    get_filename_component(COMMON_DIR ${CMAKE_CURRENT_LIST_DIR}/../.. ABSOLUTE)
+  if (NOT PROJECT_ROOT)
+    get_filename_component(PROJECT_ROOT ${CMAKE_CURRENT_LIST_DIR}/../.. ABSOLUTE)
   endif()
 
-  set(PB_LIB_ABS_DIR "${COMMON_DIR}/${PB_LIB_DIR}")
+  set(CPPPS_LIB_ABS_DIR "${PROJECT_ROOT}/${CPPPS_LIB_DIR}")
 
-  if (NOT TARGET ${PB_LIB_TARGET})
-    add_subdirectory(${PB_LIB_ABS_DIR} ${PB_LIB_TARGET})
-    add_library(${PB_LIB_ALIAS} ALIAS ${PB_LIB_TARGET})
-    set(PB_LIBS "${PB_LIBS} ${ALIAS}")
+  if (NOT TARGET ${CPPPS_LIB_TARGET})
+    add_subdirectory(${CPPPS_LIB_ABS_DIR} ${CPPPS_LIB_TARGET})
+    add_library(${CPPPS_LIB_ALIAS} ALIAS ${CPPPS_LIB_TARGET})
+    set(CPPPS_LIBS "${CPPPS_LIBS} ${ALIAS}")
   endif()
 
 endmacro()
