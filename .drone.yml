@@ -16,7 +16,7 @@ steps:
   - cmake --build .
 
 - name: test
-  image: chodak166/cpp-dev:focal-base-1.0
+  image: chodak166/dev-cpp:focal-base-1.0
   commands:
   - cd build
   - ctest -V .
