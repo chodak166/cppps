@@ -1,0 +1,23 @@
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/plugins)
+
+set(PLUGIN_TARGET "LoggingDl")
+
+add_library(${PLUGIN_TARGET} MODULE
+  Plugin.cpp
+  )
+
+set_target_properties(${PLUGIN_TARGET} PROPERTIES
+  CXX_VISIBILITY_PRESET hidden
+  VERSION ${PROJECT_VERSION}
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  )
+
+target_link_libraries(${PLUGIN_TARGET}
+  cppps::logging
+  cppps::dl
+  )
+
+target_compile_definitions(${PLUGIN_TARGET} PRIVATE
+  -DPLUGIN_NAME="${PLUGIN_TARGET}"
+  -DPLUGIN_VERSION="${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}"
+  )

@@ -1,0 +1,25 @@
+// Copyright (c) 2021  Lukasz Chodyla
+// Distributed under the Boost Software License v1.0.
+// See accompanying file LICENSE.txt or copy at
+// https://www.boost.org/LICENSE_1_0.txt for the full license.
+
+
+#ifndef LOGGING_H
+#define LOGGING_H
+
+#include ${CPPPS_LOGGING_HEADER}
+
+#include "cppps/logging/LoggerSettings.h"
+#include <memory>
+
+namespace cppps {
+
+class Logger;
+using LoggerPtr = std::shared_ptr<Logger>;
+
+LoggerPtr setupLogger(const LoggerSettings& settings = LoggerSettings());
+void importLogger(const LoggerPtr& logger);
+
+} // namespace cppps
+
+#endif // LOGGING_H

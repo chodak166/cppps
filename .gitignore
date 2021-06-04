@@ -1,0 +1,6 @@
+CMakeLists.txt.user
+build
+build-*
+*-build
+compile_commands.json
+pb-*.sh
