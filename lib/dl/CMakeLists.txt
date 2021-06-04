@@ -46,16 +46,16 @@ target_link_libraries(${PROJECT_NAME}
   stdc++fs
   )
 
-enable_testing(ON)
+enable_testing()
 
 set(LIB_ROOT ${CMAKE_CURRENT_LIST_DIR})
 
-option(CPPPS_UNIT_TESTS_BUILD "Build CPPPS unit tests")
+option(CPPPS_DL_UNIT_TESTS_BUILD "Build CPPPS unit tests")
 if (${CPPPS_UNIT_TESTS_BUILD})
   add_subdirectory(tests/unit)
 endif()
 
-option(CPPPS_INTEGRATION_TESTS_BUILD "Build CPPPS integraton tests")
+option(CPPPS_DL_INTEGRATION_TESTS_BUILD "Build CPPPS integraton tests")
 if (${CPPPS_INTEGRATION_TESTS_BUILD})
   add_subdirectory(tests/integration)
 endif()

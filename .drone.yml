@@ -10,8 +10,8 @@ steps:
   - mkdir build
   - cd build
   - cmake
-    -D CPPPS_UNIT_TESTS_BUILD=ON
-    -D CPPPS_INTEGRATION_TESTS_BUILD=ON
+    -D CPPPS_DL_UNIT_TESTS_BUILD=ON
+    -D CPPPS_DL_INTEGRATION_TESTS_BUILD=ON
     ..
   - cmake --build .
 
