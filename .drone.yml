@@ -18,7 +18,7 @@ steps:
 
   - cd ..
   - mkdir build-boost
-  - cd build
+  - cd build-boost
   - cmake
     -D CPPPS_DL_USE_BOOST=ON
     -D CPPPS_DL_INTEGRATION_TESTS_BUILD=ON
