@@ -19,6 +19,7 @@
 #include <regex>
 
 using cppps::PluginCollector;
+using Path = std::filesystem::path;
 
 namespace test {
 namespace {
@@ -29,22 +30,22 @@ const auto PLUGIN_DIR_B = TMP_DIR + "/cppps_test_plugins_2";
 const auto PLUGIN_DIR_C = TMP_DIR + "/cppps_test_plugins_3";
 const auto PLUGIN_DIR_D = TMP_DIR + "/cppps_test_plugins_4";
 
-const auto PLUGIN_A_1_FILE          = PLUGIN_DIR_A + "/libplugin_a1.so";
-const auto PLUGIN_A_1_FILE_V        = PLUGIN_DIR_A + "/libplugin_a1.so.1";
-const auto PLUGIN_A_1_FILE_VV       = PLUGIN_DIR_A + "/libplugin_a1.so.1.1";
-const auto PLUGIN_A_1_FILE_VVV      = PLUGIN_DIR_A + "/libplugin_a1.so.1.1.1";
-const auto PLUGIN_A_1_FILE_VVV_NEW  = PLUGIN_DIR_A + "/libplugin_a1.so.1.2";
-const auto PLUGIN_A_2_FILE          = PLUGIN_DIR_A + "/libplugin_a2.so";
+const Path PLUGIN_A_1_FILE          = PLUGIN_DIR_A + "/libplugin_a1.so";
+const Path PLUGIN_A_1_FILE_V        = PLUGIN_DIR_A + "/libplugin_a1.so.1";
+const Path PLUGIN_A_1_FILE_VV       = PLUGIN_DIR_A + "/libplugin_a1.so.1.1";
+const Path PLUGIN_A_1_FILE_VVV      = PLUGIN_DIR_A + "/libplugin_a1.so.1.1.1";
+const Path PLUGIN_A_1_FILE_VVV_NEW  = PLUGIN_DIR_A + "/libplugin_a1.so.1.2";
+const Path PLUGIN_A_2_FILE          = PLUGIN_DIR_A + "/libplugin_a2.so";
 
-const auto PLUGIN_B_1_FILE          = PLUGIN_DIR_B + "/libplugin_b1.so";
-const auto PLUGIN_B_2_FILE          = PLUGIN_DIR_B + "/libplugin_b2.so";
-const auto PLUGIN_B_3_FILE          = PLUGIN_DIR_B + "/libplugin_b2.plugin";
-const auto OTHER_B_4_FILE           = PLUGIN_DIR_B + "/libplugin_b2.txt";
+const Path PLUGIN_B_1_FILE          = PLUGIN_DIR_B + "/libplugin_b1.so";
+const Path PLUGIN_B_2_FILE          = PLUGIN_DIR_B + "/libplugin_b2.so";
+const Path PLUGIN_B_3_FILE          = PLUGIN_DIR_B + "/libplugin_b2.plugin";
+const Path OTHER_B_4_FILE           = PLUGIN_DIR_B + "/libplugin_b2.txt";
 
-const auto PLUGIN_C_1_FILE          = PLUGIN_DIR_C + "/libplugin_c1.so";
-const auto PLUGIN_C_2_FILE          = PLUGIN_DIR_C + "/libplugin_c2.so";
+const Path PLUGIN_C_1_FILE          = PLUGIN_DIR_C + "/libplugin_c1.so";
+const Path PLUGIN_C_2_FILE          = PLUGIN_DIR_C + "/libplugin_c2.so";
 
-const auto PLUGIN_D_1_FILE          = PLUGIN_DIR_D + "/libplugin_d1.so.1.2.3";
+const Path PLUGIN_D_1_FILE          = PLUGIN_DIR_D + "/libplugin_d1.so.1.2.3";
 
 constexpr auto PLUGIN_DIR_A_COUNT = 2;
 constexpr auto PLUGIN_DIR_B_COUNT = 2;
@@ -184,7 +185,7 @@ TEST_CASE("Testing plugin collector", "[plugin_collector]")
   SECTION("When extra plugin environment variable was set, then given path is collected unconditionally")
   {
     collector.enableFileEnvVariable(test::EXTRA_FILE_ENV_NAME);
-    test::setEnvVariable(test::EXTRA_FILE_ENV_NAME, test::PLUGIN_B_3_FILE);
+    test::setEnvVariable(test::EXTRA_FILE_ENV_NAME, test::PLUGIN_B_3_FILE.string());
 
     auto files = collector.collectPlugins();
     files.sort();
@@ -197,7 +198,8 @@ TEST_CASE("Testing plugin collector", "[plugin_collector]")
   SECTION("When extra plugin environment variable contains multiple paths, then given paths are collected unconditionally")
   {
     collector.enableFileEnvVariable(test::EXTRA_FILE_ENV_NAME);
-    test::setEnvVariable(test::EXTRA_FILE_ENV_NAME, test::PLUGIN_A_1_FILE_VV + ';' + test::PLUGIN_B_3_FILE);
+    test::setEnvVariable(test::EXTRA_FILE_ENV_NAME, test::PLUGIN_A_1_FILE_VV.string()
+                         + ';' + test::PLUGIN_B_3_FILE.string());
 
     auto files = collector.collectPlugins();
     files.sort();
@@ -223,7 +225,7 @@ TEST_CASE("Testing plugin collector", "[plugin_collector]")
     collector.addDirectory(test::PLUGIN_DIR_A);
 
     collector.enableFileEnvVariable(test::EXTRA_FILE_ENV_NAME);
-    test::setEnvVariable(test::EXTRA_FILE_ENV_NAME, test::OTHER_B_4_FILE);
+    test::setEnvVariable(test::EXTRA_FILE_ENV_NAME, test::OTHER_B_4_FILE.string());
 
     collector.enablePathEnvVariable(test::EXTRA_PATH_ENV_NAME);
     test::setEnvVariable(test::EXTRA_PATH_ENV_NAME, test::PLUGIN_DIR_C);
@@ -247,9 +249,9 @@ TEST_CASE("Testing plugin collector", "[plugin_collector]")
 namespace test {
 namespace {
 
-void writeRandomFile(std::string_view filename, int bytes = 1024)
+void writeRandomFile(const Path& path, int bytes = 1024)
 {
-  std::ofstream file(filename.data(), std::ofstream::binary);
+  std::ofstream file(path.string(), std::ofstream::binary);
   if (file.is_open()) {
     for (int i = 0; i < bytes; ++i) {
       file << static_cast<char>(rand() % std::numeric_limits<char>::max());
@@ -257,7 +259,7 @@ void writeRandomFile(std::string_view filename, int bytes = 1024)
     file.close();
   }
   else {
-    throw std::runtime_error("Cannot open file: " + std::string(filename));
+    throw std::runtime_error("Cannot open file: " + path.string());
   }
 }
 
@@ -267,8 +269,8 @@ void setEnvVariable(const std::string& var, const std::string& value)
   setenv(var.c_str(), value.c_str(), 1);
 #else
   auto str = var + "=" + value;
-  auto envExpression = strdup(str.c_str());
-  putenv(envExpression);
+  auto envExpression = _strdup(str.c_str());
+  _putenv(envExpression);
 #endif
 }
 

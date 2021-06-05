@@ -10,6 +10,8 @@
 #ifdef __linux
 #include <unistd.h>
 #include <linux/limits.h>
+#else
+#include <windows.h>
 #endif
 
 std::string cppps::getProgramDirPath()
@@ -20,7 +22,7 @@ std::string cppps::getProgramDirPath()
   ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
   std::filesystem::path execPath = std::string(result, (count > 0) ? count : 0);
 #else
-  wchar_t path[MAX_PATH] = { 0 };
+  wchar_t path[_MAX_PATH] = { 0 };
   GetModuleFileNameW(NULL, path, MAX_PATH);
   std::filesystem::path execPath = path;
 #endif

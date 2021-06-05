@@ -62,7 +62,7 @@ T Resource::as() const
   try {
     return std::any_cast<T>(object);
   }
-  catch(std::bad_any_cast& e) {
+  catch(std::bad_any_cast&) {
     throw BadCastException(std::string("Resource type conversion failed: ")
                            + object.type().name() + " to " + typeid(T).name()
                            + "; ensure that RTLD_GLOBAL flag is enabled");

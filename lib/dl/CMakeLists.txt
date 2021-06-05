@@ -27,7 +27,7 @@ else()
     set(SOURCES src/WindowsPluginLoader.cpp)
   else()
     set(SOURCES src/DlopenPluginLoader.cpp)
-    set(LIBRARIES dl)
+    set(LIBRARIES dl stdc++fs)
   endif()
 endif()
 
@@ -38,8 +38,6 @@ set(SOURCES ${SOURCES}
   src/PluginSystem.cpp
   src/OsUtils.cpp
   )
-
-set(LIBRARIES ${LIBRARIES} stdc++fs)
 
 add_library(${PROJECT_NAME} ${SOURCES})
 add_library(cppps::dl ALIAS ${PROJECT_NAME})

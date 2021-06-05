@@ -10,6 +10,11 @@
 #include <algorithm>
 #include <regex>
 #include <filesystem>
+#include <sstream>
+
+#ifdef _MSC_VER
+#pragma warning(disable: 4996) // getenv warning
+#endif
 
 using cppps::PluginCollector;
 
@@ -81,7 +86,7 @@ PluginCollector::Paths PluginCollector::collectPlugins()
   appendDirectoriesScanResults(dirs, extensions, pathMap);
 
   transform(pathMap.begin(), pathMap.end(), std::back_inserter(paths),
-            [](const PathMap::value_type& val){return val.second.path;} );
+            [](const PathMap::value_type& val){return val.second.path.string();} );
 
   return paths;
 }

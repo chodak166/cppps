@@ -16,7 +16,7 @@ inline BoostPluginLoader getPluginLoader(){return BoostPluginLoader();}
 # ifdef _WIN32
 #include "WindowsPluginLoader.h"
 namespace cppps {
-inline WindowsnPluginLoader getPluginLoader(){return WindowsPluginLoader();}
+inline WindowsPluginLoader getPluginLoader(){return WindowsPluginLoader();}
 }
 # else
 #include "DlopenPluginLoader.h"

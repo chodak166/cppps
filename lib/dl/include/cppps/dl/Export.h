@@ -20,10 +20,17 @@
 #  define CPPPS_SYMBOL_EXPORT __declspec(dllexport)
 #endif
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) || defined(__CYGWIN__)
+#define CPPPS_DL_EXPORT_FN(FN_NAME, FN_ALIAS)                               \
+  extern "C" {CPPPS_SYMBOL_EXPORT void* FN_ALIAS() {                        \
+    return reinterpret_cast<void*>(reinterpret_cast<intptr_t>(&FN_NAME));}} \
+  /**/
+#else
 #define CPPPS_DL_EXPORT_FN(FN_NAME, FN_ALIAS)                         \
   extern "C" {CPPPS_SYMBOL_EXPORT void* FN_ALIAS                      \
     = reinterpret_cast<void*>(reinterpret_cast<intptr_t>(&FN_NAME));} \
   /**/
+#endif
 
 #ifndef CPPPS_DL_USE_BOOST
 #define CPPPS_EXPORT_PLUGIN(CLASS_NAME)                         \
