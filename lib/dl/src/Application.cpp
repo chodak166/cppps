@@ -5,19 +5,16 @@
 
 #include "cppps/dl/Application.h"
 #include "cppps/dl/Cli.h"
-#include "cppps/dl/BoostPluginLoader.h"
+#include "PluginLoader.h"
+
+#include "OsUtils.h"
 
 #include <filesystem>
-#include <climits>
 #include <iostream>
 #include <csignal>
-
-#ifdef __unix
-#include <unistd.h>
-#endif
+#include <functional>
 
 using namespace cppps;
-
 
 namespace  {
 
@@ -55,18 +52,7 @@ void Application::setPluginDirectories(const Application::Directories& dirs)
 
 std::string Application::getAppDirPath()
 {
-
-#ifdef __unix
-  char result[PATH_MAX];
-  ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-  std::filesystem::path execPath = std::string(result, (count > 0) ? count : 0);
-#else
-  wchar_t path[MAX_PATH] = { 0 };
-  GetModuleFileNameW(NULL, path, MAX_PATH);
-  std::filesystem::path execPath = path;
-#endif
-
-  return execPath.parent_path().string();
+  return cppps::getProgramDirPath();
 }
 
 void Application::preloadPlugin(IPluginUPtr&& plugin)
@@ -142,7 +128,7 @@ PluginCollector::Paths Application::collectPlugins()
 
 void Application::loadPlugins(const PluginCollector::Paths& pluginPaths)
 {
-  BoostPluginLoader loader;
+  auto loader = cppps::getPluginLoader();
   for (const auto& pluginPath: pluginPaths) {
     auto plugin = loader.load(pluginPath);
     pluginSystem.addPlugin(std::move(plugin));

@@ -10,7 +10,7 @@
 #include <filesystem>
 #include <catch2/catch.hpp>
 
-#include "app_plugins/ITestProduct.h"
+#include "test_plugins/ITestProduct.h"
 
 using namespace cppps;
 
@@ -18,6 +18,7 @@ namespace test {
 namespace {
 
 constexpr auto PARAM_VALUE = "test product value";
+const auto PLUGINS_DIR = Application::getAppDirPath() + "/test_plugins";
 
 const AppInfo info {
   "ApplicationTest",
@@ -97,7 +98,7 @@ public:
 TEST_CASE("Testing application execution", "[app_exec]")
 {
   Application app(test::info);
-  app.setPluginDirectories({Application::getAppDirPath() + "/app_plugins"});
+  app.setPluginDirectories({test::PLUGINS_DIR});
 
   SECTION("When the application is executed with working plugins, then no exception is thrown")
   {
@@ -142,7 +143,7 @@ TEST_CASE("Testing application execution", "[app_exec]")
 TEST_CASE("Testing application CLI", "[app_cli]")
 {
   Application app(test::info);
-  app.setPluginDirectories({Application::getAppDirPath() + "/app_plugins"});
+  app.setPluginDirectories({test::PLUGINS_DIR});
 
   SECTION("When the help page is requested, then the plugins are not initialized")
   {
@@ -207,7 +208,7 @@ TEST_CASE("Testing application destruction", "[app_destruct]")
 
     {
       Application app(test::info);
-      app.setPluginDirectories({Application::getAppDirPath() + "/app_plugins"});
+      app.setPluginDirectories({test::PLUGINS_DIR});
       app.preloadPlugin(std::make_unique<test::SpyPlugin>(values));
       app.exec();
       values.product = nullptr; // don't let the product outlive the app

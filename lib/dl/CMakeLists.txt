@@ -14,17 +14,37 @@ get_filename_component(PROJECT_ROOT ../../ ABSOLUTE)
 include("${PROJECT_ROOT}/cmake/helpers.cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_ROOT}/cmake/modules")
 
-find_package(Boost REQUIRED COMPONENTS filesystem system) #TODO make boost optional
 find_package(CLI MODULE)
 
-add_library(${PROJECT_NAME} SHARED
+option(CPPPS_DL_USE_BOOST "Use Boost DLL" OFF)
+if (${CPPPS_DL_USE_BOOST})
+  find_package(Boost REQUIRED COMPONENTS filesystem system)
+  add_definitions(-DCPPPS_DL_USE_BOOST)
+  set(SOURCES src/BoostPluginLoader.cpp)
+  set(LIBRARIES dl ${Boost_LIBRARIES})
+else()
+  if(WIN32)
+    set(SOURCES src/WindowsPluginLoader.cpp)
+  else()
+    set(SOURCES src/DlopenPluginLoader.cpp)
+    set(LIBRARIES dl)
+  endif()
+endif()
+
+set(SOURCES ${SOURCES}
   src/Application.cpp
-  src/BoostPluginLoader.cpp
   src/Cli.cpp
   src/PluginCollector.cpp
   src/PluginSystem.cpp
+  src/OsUtils.cpp
   )
+
+set(LIBRARIES ${LIBRARIES} stdc++fs)
+
+add_library(${PROJECT_NAME} ${SOURCES})
 add_library(cppps::dl ALIAS ${PROJECT_NAME})
+
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
@@ -40,11 +60,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   ENABLE_EXPORTS ON
   )
 
-target_link_libraries(${PROJECT_NAME}
-  ${Boost_LIBRARIES}
-  dl
-  stdc++fs
-  )
+
+# --- tests ---
 
 enable_testing()
 

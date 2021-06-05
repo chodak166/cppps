@@ -6,10 +6,10 @@
 #include "Plugin.h"
 
 #include <cppps/dl/ICli.h>
+#include <cppps/dl/Export.h>
 #include <cppps/logging/Logging.h>
 #include <cppps/logging/LoggingCli.h>
 
-#include <boost/dll/alias.hpp>
 #include <iostream>
 
 using namespace cppps::dl;
@@ -33,11 +33,5 @@ void Plugin::stop()
 {
 }
 
-// --- export the plugin ---
 
-cppps::dl::IPluginUPtr makePlugin()
-{
-  return std::make_unique<Plugin>();
-}
-
-BOOST_DLL_ALIAS(makePlugin, make_plugin)
+CPPPS_EXPORT_PLUGIN(Plugin)

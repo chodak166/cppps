@@ -10,8 +10,19 @@ steps:
   - mkdir build
   - cd build
   - cmake
+    -D CPPPS_DL_USE_BOOST=OFF
     -D CPPPS_DL_UNIT_TESTS_BUILD=ON
     -D CPPPS_DL_INTEGRATION_TESTS_BUILD=ON
+    ..
+  - cmake --build .
+
+  - cd ..
+  - mkdir build-boost
+  - cd build
+  - cmake
+    -D CPPPS_DL_USE_BOOST=ON
+    -D CPPPS_DL_INTEGRATION_TESTS_BUILD=ON
+    -D CPPPS_LOGGING_BUILD=OFF
     ..
   - cmake --build .
 
@@ -19,4 +30,7 @@ steps:
   image: chodak166/dev-cpp:focal-base-1.0
   commands:
   - cd build
+  - ctest -V .
+
+  - cd ../build-boost
   - ctest -V .

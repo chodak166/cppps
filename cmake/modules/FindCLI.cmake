@@ -22,4 +22,5 @@ if (NOT CPPPS_CLI_INCLUDE_DIR)
   message(FATAL_ERROR "CLI11 library has not been found. Consider using CLI_DIR variable." )
 endif()
 
+include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(CLI REQUIRED_VARS CPPPS_CLI_INCLUDE_DIR)

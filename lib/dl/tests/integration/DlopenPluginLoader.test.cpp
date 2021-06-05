@@ -4,20 +4,15 @@
 // https://www.boost.org/LICENSE_1_0.txt for the full license.
 
 
-#include "cppps/dl/BoostPluginLoader.h"
 #include "cppps/dl/exceptions.h"
+#include "DlopenPluginLoader.h"
 #include "OsUtils.h"
 
 #include <catch2/catch.hpp>
 
-#include <boost/dll/runtime_symbol_info.hpp>
-#include <boost/dll/shared_library.hpp>
-#include <boost/function.hpp>
-#include <boost/exception/diagnostic_information.hpp>
-
 #include <filesystem>
 
-using cppps::BoostPluginLoader;
+using cppps::DlopenPluginLoader;
 using cppps::PluginDeleter;
 
 namespace test {
@@ -41,7 +36,7 @@ const auto BAD_PLUGIN_PATH = PLUGIN_BAD_DIR + "/libplugin_bad." + getPluginExten
 
 TEST_CASE("Testing plugin loader successful library import", "[pl_success]")
 {
-  BoostPluginLoader loader;
+  DlopenPluginLoader loader;
 
   SECTION("When a single plugin is loaded, then the returned object is not null")
   {
@@ -61,7 +56,7 @@ TEST_CASE("Testing plugin loader successful library import", "[pl_success]")
     cppps::IPluginDPtr plugin {nullptr, PluginDeleter{nullptr}};
 
     { // loader's scope
-      BoostPluginLoader localLoader;
+      DlopenPluginLoader localLoader;
       plugin = localLoader.load(test::PLUGIN_A_PATH);
     }
 
@@ -83,7 +78,7 @@ TEST_CASE("Testing plugin loader successful library import", "[pl_success]")
 
 TEST_CASE("Testing plugin loader exceptions", "[pl_exceptions]")
 {
-  BoostPluginLoader loader;
+  DlopenPluginLoader loader;
 
   SECTION("When the plugin path is incorrect, then the PluginNotFoundException is thrown")
   {

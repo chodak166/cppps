@@ -1,6 +1,6 @@
 #include "ITestProduct.h"
 #include "cppps/dl/IPlugin.h"
-#include <boost/dll/alias.hpp>
+#include "cppps/dl/Export.h"
 
 using namespace cppps;
 
@@ -40,10 +40,4 @@ private:
   ProductBPtr product {nullptr};
 };
 
-
-cppps::IPluginUPtr makePlugin()
-{
-  return std::make_unique<Plugin>();
-}
-
-BOOST_DLL_ALIAS(makePlugin, make_plugin)
+CPPPS_EXPORT_PLUGIN(Plugin)
