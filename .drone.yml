@@ -10,6 +10,7 @@ steps:
   - mkdir build
   - cd build
   - cmake
+    -D CMAKE_BUILD_TYPE=Release
     -D CPPPS_DL_USE_BOOST=OFF
     -D CPPPS_DL_UNIT_TESTS_BUILD=ON
     -D CPPPS_DL_INTEGRATION_TESTS_BUILD=ON
@@ -20,6 +21,7 @@ steps:
   - mkdir build-boost
   - cd build-boost
   - cmake
+    -D CMAKE_BUILD_TYPE=Release
     -D CPPPS_DL_USE_BOOST=ON
     -D CPPPS_DL_INTEGRATION_TESTS_BUILD=ON
     -D CPPPS_LOGGING_BUILD=OFF
