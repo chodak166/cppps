@@ -61,7 +61,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 # --- tests ---
 
-enable_testing()
+enable_testing(ON)
 
 set(LIB_ROOT ${CMAKE_CURRENT_LIST_DIR})
 

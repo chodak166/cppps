@@ -7,7 +7,6 @@ include_directories(
   ${CPPPS_FAKEIT_INCLUDE_DIR}
 )
 
-#add_subdirectory(dummy_plugins)
 add_subdirectory(test_plugins)
 
 set(COMMON_LIBS
