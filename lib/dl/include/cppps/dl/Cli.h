@@ -53,6 +53,8 @@ public:
   void addFlag(std::string_view option, bool& target,
                std::string_view description) override;
 
+  void removeOption(const std::string& name) override;
+
 private:
   AppInfo appInfo;
   std::string message;

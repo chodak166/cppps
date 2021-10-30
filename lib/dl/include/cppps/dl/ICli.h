@@ -49,6 +49,8 @@ public:
   virtual void addFlag(std::string_view option, bool& target,
                  std::string_view description) = 0;
 
+  virtual void removeOption(const std::string& name) = 0;
+
   //TODO: add option & flag callbacks
 };
 

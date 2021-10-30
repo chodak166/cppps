@@ -146,3 +146,12 @@ void Cli::addOption(std::string_view option, std::vector<std::string>& target,
   pimpl->cliApp.add_option(option.data(), target,
                            description.data(), defaulted);
 }
+
+void Cli::removeOption(const std::string& option)
+{
+  std::string name = option.substr(0, option.find(','));
+  auto opt = pimpl->cliApp.get_option_no_throw(name);
+  if (opt) {
+    pimpl->cliApp.remove_option(opt);
+  }
+}
