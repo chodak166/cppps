@@ -1,7 +1,8 @@
-#include "../ProviderPlugin/IProduct.h"
+#include "../LogProviderPlugin/IProduct.h"
 #include <cppps/dl/IPlugin.h>
 #include <cppps/dl/ICli.h>
 #include <cppps/dl/IApplication.h>
+#include <cppps/logging/Logging.h>
 
 #include <boost/dll/alias.hpp>
 #include <iostream>
@@ -19,23 +20,27 @@ public:
 
     app.setMainLoop([this](){
       for (int i = 0; i < numOfIncreases; ++i) {
-        std::cout << "Increased product value: " << product->increaseValue() << std::endl;
+        LOG(INFO) << "Increased product value: " << product->increaseValue();
       }
-      std::cout << "Exiting" << std::endl;
+      LOG(INFO)<< "Exiting";
       return 0;
     });
   };
   void submitProviders(const SubmitProvider& /*submitProvider*/) override {};
   void submitConsumers(const SubmitConsumer& submitConsumer) override
   {
+    submitConsumer("shared_logger", [](const Resource& resource){
+      auto logger = resource.as<cppps::LoggerPtr>();
+      cppps::importLogger(logger);
+    });
     submitConsumer("product", [this](const Resource& resource){
       product = resource.as<IProductPtr>();
     });
   };
   void initialize() override
   {
-    std::cout << "Using product" << std::endl;
-    std::cout << "Initial product value: " << product->getValue() << std::endl;
+    LOG(INFO) << "Using product";
+    LOG(INFO) << "Initial product value: " << product->getValue();
   }
   void start() override {}
   void stop() override {}

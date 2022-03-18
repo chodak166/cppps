@@ -10,6 +10,7 @@ set(CATCH2_PATHS
   "${CMAKE_SOURCE_DIR}/extern/catch2"
   "${CMAKE_SOURCE_DIR}/external/catch2"
   "${CMAKE_SOURCE_DIR}/submodules/catch2"
+  "${CPPPS_ROOT}/submodules/catch2"
   )
 
 find_path(CPPPS_CATCH2_INCLUDE_DIR

@@ -1,7 +1,8 @@
-#include "version.h"
+#include "cppps-minimal/Version.h"
 
-#include <cppps/Application.h>
-#include <cppps/Logging.h>
+#include <cppps/dl/Application.h>
+
+// Run with --help argument to see the help page
 
 int main(int argc, char *argv[])
 {
@@ -14,7 +15,7 @@ int main(int argc, char *argv[])
   };
 
   cppps::Application app(info);
-  app.setPluginDirectories({app.getAppDirPath() + "/minex_plugins"});
+  app.setPluginDirectories({app.getAppDirPath() + "/" + cppps::minex::PLUGIN_DIR_NAME});
   return app.exec(argc, argv);
 }
 

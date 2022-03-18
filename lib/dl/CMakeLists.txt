@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.5)
 
 project(cppps-dl LANGUAGES CXX)
 
+if(TARGET ${PROJECT_NAME})
+  message("Target ${PROJECT_NAME} already added, skipping")
+  return()
+endif()
+
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

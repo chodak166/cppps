@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.5)
 project(cppps-logging VERSION 1.0.0)
 set(TARGET ${PROJECT_NAME})
 
+if(TARGET ${TARGET})
+  message("Target ${TARGET} already added, skipping")
+  return()
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -31,6 +36,7 @@ endif()
 configure_file(src/Logging.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/cppps/logging/Logging.h)
 
 add_library(${TARGET} STATIC ${SOURCES})
+add_library(cppps::logging ALIAS ${PROJECT_NAME})
 
 target_include_directories(${TARGET}
   PUBLIC
@@ -49,6 +55,6 @@ target_link_libraries(${TARGET}
 
 ################ SUBDIRECTORIES ##############
 
-#common_option_subdir(CPPPS_LOGGING_DL_PLUGIN_BUILD
-#  "Build logging DL plugin (shared logger)"
-#  "${CMAKE_CURRENT_SOURCE_DIR}/dl-plugin")
+common_option_subdir(CPPPS_LOGGING_BUILD_DL_PLUGIN
+ "Build logging DL plugin (shared logger)"
+ "${CMAKE_CURRENT_LIST_DIR}/dl-plugin")

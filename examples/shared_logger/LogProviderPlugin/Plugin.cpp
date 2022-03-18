@@ -1,5 +1,6 @@
 #include "IProduct.h"
 #include <cppps/dl/IPlugin.h>
+#include <cppps/logging/Logging.h>
 
 #include <boost/dll/alias.hpp>
 #include <iostream>
@@ -33,9 +34,16 @@ public:
   {
     submitProvider("product", [this](){return product;});
   };
-  void submitConsumers(const SubmitConsumer& /*submitConsumer*/) override {};
+  void submitConsumers(const SubmitConsumer& submitConsumer) override
+  {
+    submitConsumer("shared_logger", [](const Resource& resource){
+      auto logger = resource.as<cppps::LoggerPtr>();
+      cppps::importLogger(logger);
+    });
+  };
   void initialize() override
   {
+    LOG(INFO) << "Creating product";
     product = std::make_shared<Product>();
   }
   void start() override {}

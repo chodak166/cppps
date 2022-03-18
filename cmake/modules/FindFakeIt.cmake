@@ -10,6 +10,7 @@ set(FAKEIT_PATHS
   "${CMAKE_SOURCE_DIR}/extern/fakeit"
   "${CMAKE_SOURCE_DIR}/external/fakeit"
   "${CMAKE_SOURCE_DIR}/submodules/fakeit"
+  "${CPPPS_ROOT}/submodules/fakeit"
   )
 
 find_path(CPPPS_FAKEIT_INCLUDE_DIR

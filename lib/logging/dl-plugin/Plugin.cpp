@@ -12,7 +12,7 @@
 
 #include <iostream>
 
-using namespace cppps::dl;
+using namespace cppps;
 
 void Plugin::prepare(const ICliPtr& cli, IApplication&)
 {

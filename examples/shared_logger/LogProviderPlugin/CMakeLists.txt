@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(ProviderPlugin LANGUAGES CXX)
+project(LogProviderPlugin LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,6 +15,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_link_libraries(${PROJECT_NAME}
   cppps::dl
+  cppps::logging
   )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE

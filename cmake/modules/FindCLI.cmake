@@ -10,6 +10,7 @@ set(CLI_PATHS
   "${CMAKE_SOURCE_DIR}/extern/cli11"
   "${CMAKE_SOURCE_DIR}/external/cli11"
   "${CMAKE_SOURCE_DIR}/submodules/cli11"
+  "${CPPPS_ROOT}/submodules/cli11"
   )
 
 find_path(CPPPS_CLI_INCLUDE_DIR

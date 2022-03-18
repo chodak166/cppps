@@ -11,6 +11,7 @@ set(EASYLOGGINGPP_PATHS
   "${CMAKE_SOURCE_DIR}/extern/easyloggingpp"
   "${CMAKE_SOURCE_DIR}/external/easyloggingpp"
   "${CMAKE_SOURCE_DIR}/submodules/easyloggingpp"
+  "${CPPPS_ROOT}/submodules/easyloggingpp"
   )
 
 find_path(ELPP_INCLUDE_DIR
