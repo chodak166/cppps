@@ -14,3 +14,4 @@
 [submodule "submodules/easyloggingpp"]
 	path = submodules/easyloggingpp
 	url = https://github.com/amrayn/easyloggingpp.git
+	shallow = true

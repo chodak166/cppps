@@ -1,0 +1,18 @@
+Source: libcppps
+Maintainer: chodak166 <chodak166@op.pl>
+Build-Depends: cmake, dh-cmake, dh-cmake-compat (= 1), dh-sequence-cmake, debhelper-compat (= 12)
+Standards-Version: 4.1.5
+Section: misc
+Priority: optional
+
+Package: libcppps
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: C++ plugin system
+ This package contains cppps runtime libraries.
+
+Package: libcppps-dev
+Architecture: any
+Depends: libcppps (= ${binary:Version}), ${misc:Depends}
+Description: C++ plugin system headers
+ This package contains cppps development files.

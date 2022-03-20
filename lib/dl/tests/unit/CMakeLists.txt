@@ -1,6 +1,9 @@
 find_package(Catch2 MODULE)
 find_package(FakeIt MODULE)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include_directories(
   ${LIB_ROOT}/include
   ${LIB_ROOT}/submodules

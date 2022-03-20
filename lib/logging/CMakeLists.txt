@@ -17,7 +17,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib)
 
 get_filename_component(PROJECT_ROOT ../../ ABSOLUTE)
 
-include("${PROJECT_ROOT}/cmake/helpers.cmake")
+include("${PROJECT_ROOT}/cmake/include/helpers.cmake")
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_ROOT}/cmake/modules")
 
 option(CPPPS_LOGGING_USE_ELPP "Use EasyLogging++" ON)
