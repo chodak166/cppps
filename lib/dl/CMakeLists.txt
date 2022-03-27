@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 project(cppps-dl LANGUAGES CXX VERSION 0.1.0)
 
-if(TARGET ${PROJECT_NAME})
+set(TARGET_OBJ "${PROJECT_NAME}-obj")
+if(TARGET ${TARGET_OBJ})
   message("Target ${PROJECT_NAME} already added, skipping")
   return()
 endif()
@@ -45,35 +46,44 @@ set(SOURCES ${SOURCES}
   src/OsUtils.cpp
   )
 
-add_library("${PROJECT_NAME}-obj" OBJECT ${SOURCES})
+add_library(${TARGET_OBJ} OBJECT ${SOURCES})
 
-set_target_properties("${PROJECT_NAME}-obj" PROPERTIES
+set_target_properties(${TARGET_OBJ} PROPERTIES
   ENABLE_EXPORTS ON
   POSITION_INDEPENDENT_CODE ON
   )
 
-target_link_libraries("${PROJECT_NAME}-obj" ${LIBRARIES})
+target_link_libraries(${TARGET_OBJ} ${LIBRARIES})
 
-target_include_directories("${PROJECT_NAME}-obj"
+target_include_directories(${TARGET_OBJ}
   PUBLIC
-  include
-  ${CMAKE_CURRENT_BINARY_DIR}/include
-
+    include
+    ${CMAKE_CURRENT_BINARY_DIR}/include
   PRIVATE
-  src
-  ${CPPPS_CLI_INCLUDE_DIR}
+    src
+    ${CPPPS_CLI_INCLUDE_DIR}
   )
 
 set(TARGET_STATIC "${PROJECT_NAME}-static")
-add_library(${TARGET_STATIC} STATIC $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
-add_library(cppps::dl ALIAS ${TARGET_STATIC})
-target_link_libraries(${TARGET_STATIC} PUBLIC ${PROJECT_NAME}-obj)
+add_library(${TARGET_STATIC} STATIC $<TARGET_OBJECTS:${TARGET_OBJ}>)
+set_target_properties(${TARGET_STATIC} PROPERTIES EXPORT_NAME dl)
 
-set(TARGET_SHARED ${PROJECT_NAME})
-add_library(${TARGET_SHARED} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
-add_library(cppps::dl-shared ALIAS ${TARGET_SHARED})
-target_link_libraries(${TARGET_SHARED} PUBLIC ${PROJECT_NAME}-obj)
+set(TARGET_SHARED "${PROJECT_NAME}-shared")
+add_library(${TARGET_SHARED} SHARED $<TARGET_OBJECTS:${TARGET_OBJ}>)
+set_target_properties(${TARGET_SHARED} PROPERTIES EXPORT_NAME dl-shared)
 
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${PROJECT_NAME}-config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_DATADIR}/cppps/cmake"
+  )
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+  )
 
 # --- tests ---
 
@@ -100,6 +110,7 @@ file(GLOB DEV_HEADERS "include/cppps/dl/*.h")
 
 install(
   TARGETS ${TARGET_SHARED} ${TARGET_STATIC}
+  EXPORT ${PROJECT_NAME}-targets
   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bin
   )
 
@@ -107,3 +118,17 @@ install(
   FILES ${DEV_HEADERS}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cppps/dl COMPONENT dev
   )
+
+install(
+    EXPORT ${PROJECT_NAME}-targets
+    FILE ${PROJECT_NAME}-targets.cmake
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake" COMPONENT dev
+    NAMESPACE cppps::
+)
+
+install(
+    FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake" COMPONENT dev
+)

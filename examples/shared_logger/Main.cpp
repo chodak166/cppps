@@ -1,7 +1,7 @@
 #include "cppps-shared-logger/Version.h"
 
 #include <cppps/dl/Application.h>
-#include <cppps/logging/Logging.h>
+//#include <cppps/logging/Logging.h>
 
 // Run with --help argument to see the help page
 

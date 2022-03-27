@@ -9,7 +9,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib)
 set(PLUGIN_DIR_NAME "minex_plugins")
 
-add_subdirectory("../../lib/dl" cppps-dl)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../cmake/modules")
+
+find_package(CPPPS-DL MODULE REQUIRED)
 
 configure_file(Version.h.in
   ${CMAKE_BINARY_DIR}/${PROJECT_NAME}/Version.h)

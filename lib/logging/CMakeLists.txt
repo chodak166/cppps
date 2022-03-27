@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 
 project(cppps-logging VERSION 1.0.0)
 
-if(TARGET ${PROJECT_NAME})
+set(TARGET_OBJ "${PROJECT_NAME}-obj")
+if(TARGET ${TARGET_OBJ})
   message("Target ${PROJECT_NAME} already added, skipping")
   return()
 endif()
@@ -23,10 +24,11 @@ option(CPPPS_LOGGING_USE_ELPP "Use EasyLogging++" ON)
 
 if (${CPPPS_LOGGING_USE_ELPP})
   find_package(ELPP REQUIRED)
-  set(CPPPS_LOGGING_HEADER "<easylogging++.h>")
+  set(CPPPS_LOGGING_HEADER "\"easylogging++.h\"")
   set(SOURCES ${ELPP_SOURCES})
   set(EXTRA_LIBRARIES ${ELPP_LIBRARIES})
   set(EXTRA_INCLUDE_DIRS ${ELPP_INCLUDE_DIR})
+  set(EXTRA_PUBLIC_HEADERS "${ELPP_INCLUDE_DIR}/easylogging++.h")
 else()
   set(CPPPS_LOGGING_HEADER "<cppps/logging/stdeasylog.h>")
   set(SOURCES src/StdLogging.cpp)
@@ -35,38 +37,48 @@ endif()
 configure_file(src/Logging.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/cppps/logging/Logging.h)
 
 
+add_library(${TARGET_OBJ} OBJECT ${SOURCES})
 
-add_library("${PROJECT_NAME}-obj" OBJECT ${SOURCES})
-
-set_target_properties("${PROJECT_NAME}-obj" PROPERTIES
+set_target_properties(${TARGET_OBJ} PROPERTIES
   ENABLE_EXPORTS ON
   POSITION_INDEPENDENT_CODE ON
   )
 
-target_include_directories("${PROJECT_NAME}-obj"
+target_include_directories(${TARGET_OBJ}
   PUBLIC
-  ${CMAKE_CURRENT_LIST_DIR}/include
-  ${CMAKE_CURRENT_BINARY_DIR}/include/
-  ${EXTRA_INCLUDE_DIRS}
+    ${CMAKE_CURRENT_LIST_DIR}/include
+    ${CMAKE_CURRENT_BINARY_DIR}/include/
+    ${EXTRA_INCLUDE_DIRS}
 
   PRIVATE
-  ${CMAKE_CURRENT_LIST_DIR}/src/
+    ${CMAKE_CURRENT_LIST_DIR}/src/
   )
 
-target_link_libraries("${PROJECT_NAME}-obj"
+target_link_libraries(${TARGET_OBJ}
   pthread
   ${EXTRA_LIBRARIES}
   )
 
 set(TARGET_STATIC "${PROJECT_NAME}-static")
-add_library(${TARGET_STATIC} STATIC $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
-add_library(cppps::logging ALIAS ${TARGET_STATIC})
-target_link_libraries(${TARGET_STATIC} PUBLIC ${PROJECT_NAME}-obj)
+add_library(${TARGET_STATIC} STATIC $<TARGET_OBJECTS:${TARGET_OBJ}>)
+set_target_properties(${TARGET_STATIC} PROPERTIES EXPORT_NAME logging)
 
-set(TARGET_SHARED ${PROJECT_NAME})
-add_library(${TARGET_SHARED} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}-obj>)
-add_library(cppps::logging-shared ALIAS ${TARGET_SHARED})
-target_link_libraries(${TARGET_SHARED} PUBLIC ${PROJECT_NAME}-obj)
+set(TARGET_SHARED "${PROJECT_NAME}-shared")
+add_library(${TARGET_SHARED} SHARED $<TARGET_OBJECTS:${TARGET_OBJ}>)
+set_target_properties(${TARGET_SHARED} PROPERTIES EXPORT_NAME logging-shared)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  ${PROJECT_NAME}-config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+  INSTALL_DESTINATION "${CMAKE_INSTALL_DATADIR}/cppps/cmake"
+  )
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+  )
 
 # --- install ---
 
@@ -76,14 +88,30 @@ file(GLOB DEV_HEADERS "include/cppps/logging/*.h")
 
 install(
   TARGETS ${TARGET_SHARED} ${TARGET_STATIC}
+  EXPORT ${PROJECT_NAME}-targets
   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bin
   )
 
 install(
   FILES ${DEV_HEADERS}
+  ${CMAKE_CURRENT_BINARY_DIR}/include/cppps/logging/Logging.h
+  ${EXTRA_PUBLIC_HEADERS}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cppps/logging COMPONENT dev
   )
 
+install(
+    EXPORT ${PROJECT_NAME}-targets
+    FILE ${PROJECT_NAME}-targets.cmake
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake" COMPONENT dev
+    NAMESPACE cppps::
+)
+
+install(
+    FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/cmake" COMPONENT dev
+)
 
 # --- subdirectories ---
 
