@@ -25,6 +25,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
 
 target_link_libraries(${PROJECT_NAME}
   cppps::dl
+#  cppps::dl-shared
  )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PLUGIN_DIR_NAME})

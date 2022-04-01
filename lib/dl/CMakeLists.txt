@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 set(LIB_BASE_NAME dl)
-project(cppps-${LIB_BASE_NAME} LANGUAGES CXX VERSION 0.1.0)
+project(cppps-${LIB_BASE_NAME} LANGUAGES CXX VERSION 0.1.1)
 
 set(TARGET_OBJ "${PROJECT_NAME}-obj")
 if(TARGET ${TARGET_OBJ})

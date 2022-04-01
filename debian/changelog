@@ -1,5 +1,15 @@
+libcppps (0.1.1) unstable; urgency=medium
+
+  * Made boost dependency optional by implementing a native plugin loader.
+  * Added signal handling.
+  * Added easylogging and stdeasylog logging.
+  * Added custom application main loop.
+  * Added CLI parsing.
+
+ -- Łukasz Chodyła <chodak166@op.pl>  Fri, 1 Apr 2022 18:28:00 +0100
+
 libcppps (0.1.0) unstable; urgency=medium
 
   * Initial release.
 
- -- Łukasz Chodyła <chodak166@op.pl>  Sun, 22 Nov 2020 14:15:34 +0100
+ -- Łukasz Chodyła <chodak166@op.pl>  Sat, 19 Dec 2020 13:38:44 +0100
