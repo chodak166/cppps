@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(cppps-dl LANGUAGES CXX VERSION 0.1.0)
+set(LIB_BASE_NAME dl)
+project(cppps-${LIB_BASE_NAME} LANGUAGES CXX VERSION 0.1.0)
 
 set(TARGET_OBJ "${PROJECT_NAME}-obj")
 if(TARGET ${TARGET_OBJ})
@@ -66,11 +67,20 @@ target_include_directories(${TARGET_OBJ}
 
 set(TARGET_STATIC "${PROJECT_NAME}-static")
 add_library(${TARGET_STATIC} STATIC $<TARGET_OBJECTS:${TARGET_OBJ}>)
-set_target_properties(${TARGET_STATIC} PROPERTIES EXPORT_NAME dl)
+set_target_properties(${TARGET_STATIC} PROPERTIES
+  EXPORT_NAME ${LIB_BASE_NAME}
+  OUTPUT_NAME ${PROJECT_NAME}
+  )
+
 
 set(TARGET_SHARED "${PROJECT_NAME}-shared")
 add_library(${TARGET_SHARED} SHARED $<TARGET_OBJECTS:${TARGET_OBJ}>)
-set_target_properties(${TARGET_SHARED} PROPERTIES EXPORT_NAME dl-shared)
+set_target_properties(${TARGET_SHARED} PROPERTIES
+  EXPORT_NAME ${LIB_BASE_NAME}-shared
+  OUTPUT_NAME ${PROJECT_NAME}
+  VERSION ${PROJECT_VERSION}
+  SOVERSION ${PROJECT_VERSION_MAJOR}
+  )
 
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
@@ -106,12 +116,27 @@ endif()
 
 include(GNUInstallDirs)
 
-file(GLOB DEV_HEADERS "include/cppps/dl/*.h")
+file(GLOB DEV_HEADERS "include/cppps/${LIB_BASE_NAME}/*.h")
+
 
 install(
-  TARGETS ${TARGET_SHARED} ${TARGET_STATIC}
+  TARGETS ${TARGET_STATIC}
   EXPORT ${PROJECT_NAME}-targets
   DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bin
+  )
+
+install(
+  TARGETS ${TARGET_SHARED}
+  EXPORT ${PROJECT_NAME}-targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT bin
+  NAMELINK_SKIP
+  )
+
+install(
+  TARGETS ${TARGET_SHARED}
+  EXPORT ${PROJECT_NAME}-targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT dev
+  NAMELINK_ONLY
   )
 
 install(

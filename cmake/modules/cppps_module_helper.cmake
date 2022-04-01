@@ -15,6 +15,7 @@ macro(CPPPS_ADD_MODULE CPPPS_LIB_DIR CPPPS_LIB_TARGET CPPPS_LIB_ALIAS)
     message("Adding alias ${CPPPS_LIB_ALIAS} of ${CPPPS_LIB_TARGET}")
     add_library(${CPPPS_LIB_ALIAS} ALIAS ${CPPPS_LIB_TARGET})
     set(CPPPS_LIBS "${CPPPS_LIBS} ${ALIAS}")
+    target_include_directories(${CPPPS_LIB_TARGET} INTERFACE "${CPPPS_LIB_ABS_DIR}/include")
   endif()
 
 endmacro()

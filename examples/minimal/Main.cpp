@@ -1,6 +1,6 @@
 #include "cppps-minimal/Version.h"
 
-#include <cppps/dl/Application.h>
+#include "cppps/dl/Application.h"
 
 // Run with --help argument to see the help page
 

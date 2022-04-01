@@ -23,9 +23,8 @@ add_executable(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR})
 
-
 target_link_libraries(${PROJECT_NAME}
-  cppps::dl-shared
+  cppps::dl
  )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/${PLUGIN_DIR_NAME})
