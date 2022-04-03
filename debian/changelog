@@ -1,6 +1,6 @@
-libcppps (0.1.1) unstable; urgency=medium
+libcppps (0.1.1) impish; urgency=medium
 
-  * Made boost dependency optional by implementing a native plugin loader.
+  * Made boost dependency optional.
   * Added signal handling.
   * Added easylogging and stdeasylog logging.
   * Added custom application main loop.
