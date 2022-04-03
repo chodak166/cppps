@@ -54,8 +54,6 @@ set_target_properties(${TARGET_OBJ} PROPERTIES
   POSITION_INDEPENDENT_CODE ON
   )
 
-target_link_libraries(${TARGET_OBJ} ${LIBRARIES})
-
 target_include_directories(${TARGET_OBJ}
   PUBLIC
     include
@@ -67,6 +65,7 @@ target_include_directories(${TARGET_OBJ}
 
 set(TARGET_STATIC "${PROJECT_NAME}-static")
 add_library(${TARGET_STATIC} STATIC $<TARGET_OBJECTS:${TARGET_OBJ}>)
+target_link_libraries(${TARGET_STATIC} ${LIBRARIES})
 set_target_properties(${TARGET_STATIC} PROPERTIES
   EXPORT_NAME ${LIB_BASE_NAME}
   OUTPUT_NAME ${PROJECT_NAME}
@@ -75,6 +74,7 @@ set_target_properties(${TARGET_STATIC} PROPERTIES
 
 set(TARGET_SHARED "${PROJECT_NAME}-shared")
 add_library(${TARGET_SHARED} SHARED $<TARGET_OBJECTS:${TARGET_OBJ}>)
+target_link_libraries(${TARGET_SHARED} ${LIBRARIES})
 set_target_properties(${TARGET_SHARED} PROPERTIES
   EXPORT_NAME ${LIB_BASE_NAME}-shared
   OUTPUT_NAME ${PROJECT_NAME}

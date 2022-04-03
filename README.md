@@ -7,6 +7,10 @@
 	2.2. [Application](#application)  
 	2.3. [Plugin life cycle](#plugin-life-cycle)   
 3. [Installation and linking](#installation-and-linking)  
+	3.1. [Requirements](#requirements)  
+	3.2. [Precompiled packages](#precompiled-packages)  
+	3.3. [Compiling](#compiling)  
+	3.4. [Use as a submodule](#use-as-a-submodule)  
 4. [Additional notes](#additional-notes)  
 5. [TODO](#todo)
 
@@ -108,6 +112,14 @@ Each plugin must implement the `IPlugin` interface. Life cycle methods to be ove
 
 ## Installation and linking
 
+### Requirements
+
+All third-party libraries have been included in the repository (see copyright notice and the "submodules" directory). The library itself uses C++17 standard library only. Boost can be used optionally (see [Additional notes](#additional-notes)). Building requires CMake (>=3.16) and essential C++17 build toolchain.
+
+[Back to top](#cppps)
+
+### Precompiled packages
+
 Ubuntu builds are available to install via the PPA:
 
 ```bash
@@ -118,13 +130,29 @@ sudo apt-get install libcppps libcppps-dev
 
 After the installation, you can link the target to `cppps-dl` (and `cppps-logging`). CMake projects can use the `find_package` directive, e.g. `find_package(CPPPS-DL 0.0.9 REQUIRED)` and link with `cppps::dl`. The package contains both static and shared build. Please see "examples/shared_logger" for details.
 
+[Back to top](#cppps)
+
+### Compiling
+
+Manual build and installation:
+```
+git clone --recursive https://github.com/chodak166/cppps.git && cd cppps
+mkdir build && cd build
+cmake ..
+cmake --build . --target install
+```
+
+[Back to top](#cppps)
+
+### Use as a submodule
+
 You can also use this repository as a submodule. Instead of using `add_subdirectory` directive, it is recommended to use `find_package` in MODULE mode. In your `CMakeLists.txt`:
 
 ```
 list(APPEND CMAKE_MODULE_PATH "submodules/cppps/cmake/modules")
 find_package(CPPPS-DL MODULE REQUIRED)
 # ...
-target_link_libraries(MyTarget cppps::dl )
+target_link_libraries(MyTarget cppps::dl)
 ```
 Please see "examples/minimal" for details.
 
