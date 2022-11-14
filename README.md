@@ -11,8 +11,9 @@
 	3.2. [Precompiled packages](#precompiled-packages)  
 	3.3. [Compiling](#compiling)  
 	3.4. [Use as a submodule](#use-as-a-submodule)  
-4. [Additional notes](#additional-notes)  
-5. [TODO](#todo)
+4. [Examples](#examples)  
+5. [Additional notes](#additional-notes)  
+6. [TODO](#todo)
 
 ## Overview
 
@@ -24,20 +25,23 @@ The motivation was to provide a library facilitating the creation of modular mon
 
 ## Basic framework
 
-None of your functional code should depend on the plugin loader. cppps was designed to be used at the component assembly level, and its classes are meant to help you attach your libraries to the main application using small adapters.
+None of your functional code should depend on the plugin loader. `cppps` was designed to be used at the component assembly level, and its classes are meant to help you attach your libraries to the main application using small adapters. Use it as a tool that makes it easier to follow SOLID guidelines and implement design patterns with loose coupling.
 
-Consider writing a simple relay controller that turns relays on or off depending on sensor readings. If you were to break it down, you would probably have business logic that depends on the abstractions implemented, for example, by the UsbRelay and I2cSensors libraries. Linking shared libraries will force you to explicitly use files (like libusbrelay.so), while using e.g. raw `dlopen` calls will tie the implementation to a specific plugin. 
+Consider writing a simple relay controller that turns relays on or off depending on sensor readings. If you were to break it down, you would probably have business logic that depends on the abstractions finally implemented, for example, by the `UsbRelay` and `I2cSensors` libraries. Linking shared libraries will force you to explicitly use files (like `libusbrelay.so`), while using e.g. raw `dlopen` calls will tie the implementation to a specific plugin. 
 
-With cppps, you will cover the actual libraries with providers and consumers within a small plugin class. The provider will provide a pre-made object or a factory, and the consumer will fetch such a resource from the registry. Then, replacing e.g. UsbRelay with NetworkRelay or SystemTimeSource with NtpTimeSource won't be noticed by the rest of the application, regardless of whether the underlying library or the whole plugin changes.
+With `cppps`, you will cover the actual libraries with providers and consumers within a small plugin class. The provider will provide a pre-made object or a factory, and the consumer will fetch such a resource from the registry. Then, replacing e.g. `UsbRelay` with `NetworkRelay` or `SystemTimeSource` with `NtpTimeSource` won't be noticed by the rest of the application, regardless of whether the underlying library or the whole plugin changes.
 
  [Back to top](#cppps)
 
 ### Consumers and providers
 
-The concept described above can be illustrated as follows:
+The concept described above can be illustrated as follows:  
+
 ![cppps plugins](img/cppps-plugins.png)
 
-The plugin system will construct one or more directed graphs and initialize them in the correct order. In the example above:
+
+The plugin system will construct one or more directed graphs and initialize them in the correct order. In the example above:  
+
 ![cppps plugins order](img/cppps-order.png)
 
 Having at least one unsatisfied consumer (without a provider) will result in an exception being thrown. Introducing a circular dependency also throws an exception. Using lots of providers and consumers in one plugin can cause circular dependencies even where in theory everything could still work. In such cases, it is recommended to simply isolate the resources as separate plugins. Future versions of this library will probably introduce some handy flags for this occasion.
@@ -154,9 +158,15 @@ find_package(CPPPS-DL MODULE REQUIRED)
 # ...
 target_link_libraries(MyTarget cppps::dl)
 ```
-Please see "examples/minimal" for details.
+Please see `examples/minimal` for details.
 
 [Back to top](#cppps)
+
+## Examples
+
+The examples directory contains two very simple programs showing different scenarios for using the library. Both can and should be used as root cmake projects. The `minimal` example links to the same repository sources (cmake module) while the `shared_logger` example is thought to use an installed version of the library.
+
+ [Back to top](#cppps)
 
 ## Additional notes
 

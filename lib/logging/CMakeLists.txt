@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 set(LIB_BASE_NAME logging)
-project(cppps-${LIB_BASE_NAME} VERSION 0.1.1)
+project(cppps-${LIB_BASE_NAME} VERSION 0.1.2)
 
 set(TARGET_OBJ "${PROJECT_NAME}-obj")
 if(TARGET ${TARGET_OBJ})
@@ -35,7 +35,8 @@ else()
   set(SOURCES src/StdLogging.cpp)
 endif()
 
-configure_file(src/Logging.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/cppps/logging/Logging.h)
+set(CPPPS_LOGGING_GEN_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/include/)
+configure_file(src/Logging.h.in ${CPPPS_LOGGING_GEN_INCLUDES}/cppps/logging/Logging.h)
 
 add_library(${TARGET_OBJ} OBJECT ${SOURCES})
 
@@ -47,7 +48,7 @@ set_target_properties(${TARGET_OBJ} PROPERTIES
 target_include_directories(${TARGET_OBJ}
   PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/include
-    ${CMAKE_CURRENT_BINARY_DIR}/include/
+    ${CPPPS_LOGGING_GEN_INCLUDES}
     ${EXTRA_INCLUDE_DIRS}
 
   PRIVATE
@@ -66,6 +67,13 @@ set_target_properties(${TARGET_STATIC} PROPERTIES
   OUTPUT_NAME ${PROJECT_NAME}
   )
 
+target_include_directories(${TARGET_STATIC}
+  INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+    $<BUILD_INTERFACE:${CPPPS_LOGGING_GEN_INCLUDES}>
+    $<BUILD_INTERFACE:${EXTRA_INCLUDE_DIRS}>
+  )
+
 set(TARGET_SHARED "${PROJECT_NAME}-shared")
 add_library(${TARGET_SHARED} SHARED $<TARGET_OBJECTS:${TARGET_OBJ}>)
 set_target_properties(${TARGET_SHARED} PROPERTIES
@@ -73,6 +81,13 @@ set_target_properties(${TARGET_SHARED} PROPERTIES
   OUTPUT_NAME ${PROJECT_NAME}
   VERSION ${PROJECT_VERSION}
   SOVERSION ${PROJECT_VERSION_MAJOR}
+  )
+
+target_include_directories(${TARGET_SHARED}
+  INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+    $<BUILD_INTERFACE:${CPPPS_LOGGING_GEN_INCLUDES}>
+    $<BUILD_INTERFACE:${EXTRA_INCLUDE_DIRS}>
   )
 
 include(CMakePackageConfigHelpers)
@@ -116,7 +131,7 @@ install(
 
 install(
   FILES ${DEV_HEADERS}
-  ${CMAKE_CURRENT_BINARY_DIR}/include/cppps/logging/Logging.h
+  ${CPPPS_LOGGING_GEN_INCLUDES}/cppps/logging/Logging.h
   ${EXTRA_PUBLIC_HEADERS}
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cppps/logging COMPONENT dev
   )

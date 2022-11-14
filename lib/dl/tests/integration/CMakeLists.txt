@@ -1,6 +1,8 @@
 find_package(Catch2 MODULE)
 find_package(FakeIt MODULE)
 
+find_package(CPPPS-DL MODULE REQUIRED)
+
 include_directories(
   ${LIB_ROOT}/src
   ${CPPPS_CATCH2_INCLUDE_DIR}

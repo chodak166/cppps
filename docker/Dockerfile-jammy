@@ -1,0 +1,43 @@
+# Build:
+# docker build -t cppps-jammy -f Dockerfile-jammy .
+#
+# Run:
+# docker run --rm -v $PWD/..:/usr/src/cppps -e OWNER=${UID} cppps-jammy
+
+
+FROM ubuntu:jammy
+
+WORKDIR /usr/src
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt update && \
+  apt install -y \
+  build-essential \
+  cmake \
+  cmake-curses-gui \
+  debhelper \
+  dh-sequence-python3 \
+  python3 \
+  python3-setuptools \
+  python3-debian \
+  python3-all \
+  python3-autopep8 \
+  python3-pyflakes \
+  git 
+
+RUN git clone https://gitlab.kitware.com/debian/dh-cmake.git \
+&& cd dh-cmake \
+&& ./setup.py build \
+&& dpkg-buildpackage -us -uc -ui -i -I --build=binary \
+&& cd .. && apt install ./dh-cmake_*.deb \
+&& rm *.*
+
+VOLUME ["/usr/src/cppps"]
+
+ENV OWNER=root
+ENV OUT_DIR=deb-jammy
+
+COPY entrypoint.sh /
+
+ENTRYPOINT [ "/entrypoint.sh" ]
