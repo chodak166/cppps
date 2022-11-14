@@ -1,3 +1,10 @@
+libcppps (0.1.2) jammy; urgency=medium
+
+  * Fixed cmake include directories issues
+  * Added basic Dockerfiles for testing and packaging
+
+ -- Łukasz Chodyła <chodak166@op.pl>  Mon, 14 Nov 2022 13:31:00 +0100
+
 libcppps (0.1.1) impish; urgency=medium
 
   * Made boost dependency optional.
