@@ -11,8 +11,8 @@
 	3.2. [Precompiled packages](#precompiled-packages)  
 	3.3. [Compiling](#compiling)  
 	3.4. [Use as a submodule](#use-as-a-submodule)  
-4. [Additional notes](#additional-notes)  
-5. [Examples](#examples)  
+4. [Examples](#examples)  
+5. [Additional notes](#additional-notes)  
 6. [TODO](#todo)
 
 ## Overview
