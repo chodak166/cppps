@@ -9,7 +9,7 @@ CPPPS_DIR=/usr/src/cppps
 main()
 {
   makePackage
-  #makeTests
+  makeTests
   installPackages
   buildMinimalExample
   buildLoggerExample
@@ -18,7 +18,7 @@ main()
 makePackage()
 {
   pushd $CPPPS_DIR
-  mkdir -p ${OUT_DIR}/source 2>/dev/null ||: 
+  mkdir -p ${OUT_DIR}/source 2>/dev/null ||:
   dpkg-buildpackage -us -uc -ui -i -I --build=source
   mv -v $CPPPS_DIR/../*.* ${OUT_DIR}/source
   dpkg-buildpackage -us -uc -ui -i -I --build=binary
