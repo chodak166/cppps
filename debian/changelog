@@ -1,4 +1,4 @@
-libcppps (0.1.2) focal; urgency=medium
+libcppps (0.1.2-2) jammy; urgency=medium
 
   * Fixed cmake include directories issues
   * Added basic Dockerfiles for testing and packaging
