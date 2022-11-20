@@ -18,16 +18,18 @@ main()
 makePackage()
 {
   pushd $CPPPS_DIR
-  dpkg-buildpackage -us -uc -ui -i -I --build=source,binary
-  mkdir ${OUT_DIR} 2>/dev/null ||: 
-  cp -v $CPPPS_DIR/../*.* ${OUT_DIR}/
+  mkdir -p ${OUT_DIR}/source 2>/dev/null ||: 
+  dpkg-buildpackage -us -uc -ui -i -I --build=source
+  mv -v $CPPPS_DIR/../*.* ${OUT_DIR}/source
+  dpkg-buildpackage -us -uc -ui -i -I --build=binary
+  mv -v $CPPPS_DIR/../*.* ${OUT_DIR}/
   chown -v -R ${OWNER}:${OWNER} ${OUT_DIR}
   popd
 }
 
 installPackages()
 {
-  pushd $CPPPS_DIR/..
+  pushd $CPPPS_DIR/${OUT_DIR}/
   apt install -y ./libcppps*.deb
   popd
 }
